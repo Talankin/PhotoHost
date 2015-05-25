@@ -1,0 +1,4 @@
+grantTypes:
+  - password
+
+realmPhotoHost: photo-host-auth-factory

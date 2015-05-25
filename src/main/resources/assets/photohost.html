@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta charset="utf-8">
+<title>PhotoHost</title>
+</head>
+<body>
+
+<!-- Главная форма после авторизации =====================================      -->
+<form id="formPhotohost" action="/">
+<table style="width:100%; height=100%; vertical-align:middle;" border="0" cellspacing="2" cellpadding="2">
+  <tr>
+    <td width="33%"></td>
+    <td width="33%"><h3 style="text-align:center;">Приложение PhotoHost</h3></td>
+    <td style="text-align:right;">
+      Hi, friend
+      <br><a id="urlToMyProfile" href="photohost.html">Мой профиль</a>
+      <br><a id="urlToMyPhotos" href="myphotos.html">Мои фотографии</a>
+    </td>
+  </tr>
+</table>
+<button id="btnGetImage">Показать</button>
+<div id="latestImage" align="center">
+Здесь будет самое последнее добавленное фото
+</div>
+</form>
+
+<!-- Форма профиля =====================================      -->
+<form id="formMyProfile" action="/">
+<H3 align="center">Страница профиля</H3>
+<table width="60%" border="0" cellspacing="2" cellpadding="2">
+ <tr>
+   <td width="30%">Логин</td>
+   <td width="20%"></td>
+   <td>Вернуться в приложение ?</td>
+ </tr>
+ <tr>
+   <td><div id="login" name="login" style="background: #ccc"></div></td>
+   <td></td>
+   <td><button id="btnReturnToPhotohost">Назад</button></td>
+ </tr>
+ <tr>
+   <td>Полное имя</td>
+   <td></td>
+   <td></td>
+ </tr>
+ <tr>
+   <td><div id="fullname" name="fullname" style="background: #ccc"></div></td>
+   <td></td>
+   <td>Изменить свой профиль ?</td>
+ </tr>
+ <tr>
+   <td></td>
+   <td></td>
+   <td><button id="btnToPageUpdate">Изменить</button></td>
+ </tr>
+ <tr>
+   <td>&nbsp;</td>
+   <td></td>
+   <td></td>
+ </tr>
+ <tr>
+   <td></td>
+   <td></td>
+   <td>Создать новый профиль ?</td>
+ </tr>
+  <tr>
+   <td></td>
+   <td></td>
+   <td><button id="btnToPageCreate">Создать</button></td>
+ </tr>
+ <tr>
+   <td>&nbsp;</td>
+   <td></td>
+   <td></td>
+ </tr>
+ <tr>
+   <td></td>
+   <td></td>
+   <td>Удалить свой профиль ?</td>
+ </tr>
+  <tr>
+   <td></td>
+   <td></td>
+   <td><button id="btnDelProfile">Удалить</button></td>
+ </tr>
+</table>
+</form>
+
+<!-- Форма изменения профиля =====================================      -->
+<form id="formUpdateProfile" action="/">
+<H3>Изменение профиля</H3>
+<table width="30%" border="0" cellspacing="2" cellpadding="2">
+ <tr>
+   <td>Логин</td>
+ </tr>
+ <tr>
+   <td><div id="loginup" name="loginup" style="background: #ccc"></div></td>
+ </tr>
+ <tr>
+   <td>Полное имя</td>
+ </tr>
+ <tr>
+   <td><input type="text" id="fullnameup" name="fullnameup" required></td>
+ </tr>
+ <tr>
+   <td>Пароль</td>
+ </tr>
+ <tr>
+   <td><input type="password" id="password" name="password" required></td>
+ </tr>
+ <tr>
+   <td>Подтверждение пароля</td>
+ </tr>
+ <tr>
+   <td><input type="password" id="confirmpassword" name="confirmpassword" required></td>
+ </tr>
+ <tr>
+   <td><br>Сохранить изменения ?</td>
+ </tr>
+  <tr>
+   <td><button id="btnUpdate">Сохранить</button>
+       &nbsp;&nbsp;&nbsp;
+       <button id="btnCancelUpdate">Отмена</button>
+   </td>
+ </tr>
+</table>
+</form>
+
+
+<script src="js/jquery-1.7.1.min.js"></script>
+<script src="js/jquery.form.min.js"></script>
+<script src="js/main.js"></script>
+
+
+</body>
+</html>
