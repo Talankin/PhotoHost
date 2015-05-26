@@ -5,8 +5,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import org.apache.commons.codec.binary.Base64InputStream;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
+import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
@@ -19,7 +20,29 @@ public class ImageDB {
 	private static DB db;
 	
 	@SuppressWarnings("deprecation")
-	public static void loadImageToDB(String fileWithPath) {
+	public static void loadImageToDB(InputStream inputStream, String fileName) {
+		mongo = new MongoClient(SERVER);
+		db = mongo.getDB(DBNAME);
+
+		// создаем объект GridFS
+		GridFS gridFS = new GridFS(db); 
+		
+		// сохраняем фото в mongodb
+		GridFSInputFile gridFSInputFile;
+		try {
+			gridFSInputFile = gridFS.createFile(inputStream);
+			gridFSInputFile.setFilename(fileName);
+			//gridFSInputFile.setMetaData(new DBObject("owner":"girl"));
+			gridFSInputFile.save();
+		} catch (Exception e) {
+			System.out.println("=============================== Exception. Не удалось сохранить файл в mongodb\n" + e.getMessage());
+		} finally {
+			mongo.close();
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	public static void loadImageToDBFromHDD(String fileWithPath) {
 		mongo = new MongoClient(SERVER);
 		db = mongo.getDB(DBNAME);
 
@@ -34,41 +57,59 @@ public class ImageDB {
 		try {
 			gridFSInputFile = gridFS.createFile(image);
 			gridFSInputFile.setFilename("siski");
-			
-			//gridFSInputFile.setMetaData(new DBObject("owner":"girl"));
 			gridFSInputFile.save();
-			mongo.close();
 		} catch (FileNotFoundException e) {
 			System.out.println("=============================== FileNotFoundException");
-			mongo.close();
 		} catch (IOException e) {
 			System.out.println("=============================== IOException. Не удалось сохранить файл в mongodb\n");
-			mongo.close();
 		} catch (Exception e) {
 			System.out.println("=============================== Exception. Не удалось сохранить файл в mongodb\n" + e.getMessage());
+		} finally {
 			mongo.close();
 		}
 	}
 	
 	@SuppressWarnings("deprecation")
-	public static InputStream getImageFromDB (String imageName) {
+	public static InputStream getLatestImageFromDB() {
 		mongo = new MongoClient(SERVER);
 		db = mongo.getDB(DBNAME);
 		GridFS gridFS = new GridFS(db);
+		GridFSDBFile imageGFS = null;
+		
+		// создаем правило сортировки по полю "uploadDate" (наверху самые свежие)
+		DBObject sort = new BasicDBObject("uploadDate", -1);
+		DBObject dbObject = new BasicDBObject();
+
+		// берем самую первую картинку из выборки с учетом сортировки
+		imageGFS = gridFS.find(dbObject, sort).get(0);
+		if (imageGFS != null) {
+			System.out.println("::::::::::::::::::::::::::::: " + imageGFS);
+			//mongo.close();
+
+			/* читаем поток байтов из картинки
+			 * при этом используем буфферизированный поток BufferedInputStream - так быстрее,
+			 */
+			InputStream inputStream = new BufferedInputStream(imageGFS.getInputStream());
+			return inputStream;
+		} else 
+			return null;
+	}
+
+	@SuppressWarnings("deprecation")
+	public static InputStream getImageByNameFromDB (String imageName) {
+		mongo = new MongoClient(SERVER);
+		db = mongo.getDB(DBNAME);
+		GridFS gridFS = new GridFS(db);
+		
 		// ищем картинку в mongodb
 		GridFSDBFile imageGFS = gridFS.findOne(imageName);
 		//mongo.close();
 		// !!!!!!!!! сделать проверку на imageGFS == null 
-		System.out.println("::::::::::::::::::::::::::::: " + imageName + "   " + imageGFS);
-		//System.out.println("::::::::::::::::::::::::::::: взяли имя файла из монго : " + imageGFS.getFilename());
 		
 		/* читаем поток байтов из картинки
 		*  при этом используем буфферизированный поток BufferedInputStream - так быстрее,
 		*/
 		InputStream inputStream = new BufferedInputStream(imageGFS.getInputStream());
-		
-		// кодируем поток в base64, иначе залить в html не получилось
-		//Base64InputStream inputStreamBase64 = new Base64InputStream(inputStream, true);
 		
 		return inputStream;
 	}

@@ -1,9 +1,6 @@
 package ru.tds.start.resources;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.auth.AuthenticationException;
 import javax.ws.rs.Consumes;
@@ -11,7 +8,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -32,18 +28,10 @@ public class ImageResource {
 		if (user.isNull()==true) 
 			return false; 
 		
-		System.out.println(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   я в ресурсе LoadImage fileDetail = " + fileDetail);
+		System.out.println(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   я в ресурсе LoadImage fileDetail = " + 
+				fileDetail.getFileName() + "  " + fileDetail.getName() + "  " + fileDetail.getSize());
 		
-		File target = new File("D:\\test.jpg");
-		try {
-			Files.copy(inputStreamImages, target.toPath());
-			
-		} catch (IOException e) {
-			System.out.println("-------------------------------------------------- не получается вывести inputstream в файл");
-			e.printStackTrace();
-		} 
-		
-		//ImageDB.loadImageToDB(filePath);
+		ImageDB.loadImageToDB(inputStreamImages, fileDetail.getFileName());
 		return true;
 	}
 
@@ -51,13 +39,13 @@ public class ImageResource {
 	@Path("/getimage")
 	@Produces("image/jpeg")
 	@Consumes(MediaType.APPLICATION_JSON) 
-	public Response getImage(@Auth User user, @QueryParam("imagename") String imageName)
+	public Response getLatestImage(@Auth User user)
 			throws AuthenticationException {
 		// если не прошли через Authenticator
 		if (user.isNull()==true) 
 			return Response.noContent().build(); 
 		
-		return Response.ok(ImageDB.getImageFromDB(imageName)).build();
+		return Response.ok(ImageDB.getLatestImageFromDB()).build();
 	}
 
 }

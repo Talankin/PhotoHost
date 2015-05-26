@@ -1,4 +1,4 @@
-// The root URL for the RESTful services
+//---------------  инициализация  ------------------------------
 var rootURL = "http://localhost:8080/photohost";
 var rootClientsURL = "http://localhost:8080/assets";
 var rootTokenURL = "http://localhost:8080/token";
@@ -7,6 +7,8 @@ var fullname = "";
 $('#formMyProfile').hide();
 $('#formUpdateProfile').hide();
 
+// на страницу /photohost/ сразу грузим последнюю добавленную в БД картинку
+getImage();
 
 //---------------  отрабатываем клики  ------------------------------
 $('#btnSignIn').click(function() {
@@ -90,35 +92,12 @@ $('#btnCancelUserCreate').click(function() {
 	return false;
 });
 
-/*$('#btnLoadImage').click(function() {
-	loadImage();
-	return false;
-});*/
-
-$('#btnGetImage').click(function() {
-	getImage();
-	return false;
-});
-
 $('#urlToMyPhotos').click(function() {
 	signInWithToken(rootClientsURL + "/myphotos.html");
 	return false;
 });
 
 //---------------  функции, вызываемые кликом  ------------------------------
-/*function sendGetRequest() {
-	$.ajax({
-		url: rootURL,
-		dataType: "text",
-		success: function(response){
-			document.location.href = rootClientsURL + "/register.html";
-		},
-		error: function(jqXHR, textStatus, errorThrown){
-			alert('sendGetRequest error: ' + errorThrown + "  " + jqXHR.responseText, + "  " + textStatus);
-		}
-	});
-}*/
-
 function signInGetToken() {
 	$('#formSignIn').ajaxSubmit({
 		type: 'POST',
@@ -248,57 +227,12 @@ function updateUser() {
 	$('#confirmpassword').val("");
 }
 
-// загрузка картинок со страницы
-/*function loadImage() {
-	var button = $('#btnLoadImage');
-	$(document).ready(function() {
-		$.ajax_upload(button, {
-			action: rootURL + "/loadimage",
-			onSubmit: function(file, ext) {
-				this.disable();
-			},
-			onComplete: function(file, response) {
-				this.enable();
-				$("<li>" + file + "</li>").appendTo('#fileList');
-			}
-		});
-	});
-}*/
-
-/*
-// загрузка с жесткого диска
-function loadImage() {
-	var filePath = $('#filepath').val();
-	// поле ввода должно быть заполнено
-	if ($.trim(filePath).length < 1) {
-		alert("укажите путь к файлу");
-		return null;
-	}
-	
-	$.ajax({
-		type: 'POST',
-		contentType: "text/plain", 
-		url: rootURL + "/loadimage",
-		dataType: "text",
-		data: filePath,
-		success: function(response){
-			if (response == "true") {
-				alert("Файл загружен");
-			}
-			else alert("Что-то пошло не так. Повторите попытку позже");
-		},
-		error: function(jqXHR, textStatus, errorThrown){
-			alert('LoadImage error: ' + errorThrown + "  " + jqXHR.responseText);
-		}
-	});
-}
-*/
-
 function getImage() {
-	var imageName = "crossroads";
+	var imageName = "2.jpg";
 	// заливаем в div картинку в виде inputstream (предварительно раскодируем из base64 если нужно)
 	//$('#latestImage').html('<img src="data:image/jpeg;base64,' + response + '"/>');
-	$('#latestImage').html('<img src="' + rootURL + "/getimage?imagename=" + imageName + '" alt="Red Dot"/>');
+	$('#latestImage').html('<img src="' + rootURL + "/getimage" + 
+			'" alt="Тут самое последнее добавленное фото"/>');
 }
 
 function returnToPagePhotohost() {

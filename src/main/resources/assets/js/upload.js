@@ -1,3 +1,4 @@
+var rootClientsURL = "http://localhost:8080/assets";
 var formUpload = document.getElementById("formLoadImage");
 var inputUpload = document.getElementById("inputLoadImage");
 var buttonUpload = document.getElementById("btnLoadImage");
@@ -43,9 +44,40 @@ formUpload.onsubmit = function(event) {
       // файлы загружены на сервер
       buttonUpload.innerHTML="Добавить";
       alert("файлы загружены " + response);
+    } else if (xmlHttpRequest.status == 401) {
+		alert("Для работы с приложением PhotoHost необходимо ввести логин и пароль");
+		document.location.href = rootClientsURL + "/index.html";
     } else {
       alert("Ошибка загрузки файлов на сервер" + response);
     }
   };
 }
 
+/*
+//загрузка с жесткого диска
+function loadImage() {
+	var filePath = $('#filepath').val();
+	// поле ввода должно быть заполнено
+	if ($.trim(filePath).length < 1) {
+		alert("укажите путь к файлу");
+		return null;
+	}
+	
+	$.ajax({
+		type: 'POST',
+		contentType: "text/plain", 
+		url: rootURL + "/loadimage",
+		dataType: "text",
+		data: filePath,
+		success: function(response){
+			if (response == "true") {
+				alert("Файл загружен");
+			}
+			else alert("Что-то пошло не так. Повторите попытку позже");
+		},
+		error: function(jqXHR, textStatus, errorThrown){
+			alert('LoadImage error: ' + errorThrown + "  " + jqXHR.responseText);
+		}
+	});
+}
+*/
