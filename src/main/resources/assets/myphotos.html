@@ -3,14 +3,40 @@
 <head>
 <meta charset="utf-8">
 <title>Мои фото</title>
+<style>
+  table {
+    margin: auto;
+  }
+  td {
+    text-align: center;
+    border: 1px; /*solid green;*/
+  }
+  img {
+    width: 150px;
+  }
+  .table_center {
+    width: 100%;
+    border: 1px;
+  }
+  .table_100 {
+    width: 100%;
+    border: 1px;
+    text-align: left;
+  }
+  .td_left {
+    width: 33%;
+    text-align: left;
+    border: 1px; /*solid green;*/
+  }
+</style>
 </head>
 <body>
 
 <!-- Форма "Мои фотографи" =====================================      -->
 <form id="formMyPhotos" action="/">
-<table width="100%" border="0" cellspacing="2" cellpadding="2">
+<table class="table_center">
  <tr>
-   <td width="33%">
+   <td class="td_left">
      <a id="urlReturnToPhotohost" href="">Вернуться в приложение</a>
    </td>
    <td width="33%"><H3 align="center">Мои фото</H3></td>
@@ -21,16 +47,19 @@
 
 <!-- Форма upload images =====================================      -->
 <form id="formLoadImage">
-<table width="33%" border="0" cellspacing="2" cellpadding="2">
+<table class="table_100">
  <tr>
-   <td>Добавьте фото</td>
+   <td class="td_left">Добавьте фото</td>
  </tr>
  <tr>
-   <td><input type="file" id="inputLoadImage" name="images" multiple />&nbsp;&nbsp;&nbsp;
+   <td class="td_left"><input type="file" id="inputLoadImage" name="images" multiple />&nbsp;&nbsp;&nbsp;
        <button type="submit" id="btnLoadImage">Добавить</button>
    </td>
  </tr>
 </table>
+<button type="submit" id="btnGetImagesList">Лист</button>
+<div id="myImagesList">
+</div>
 </form>
 
 <script src="js/jquery-1.7.1.min.js"></script>

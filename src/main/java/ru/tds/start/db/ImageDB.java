@@ -5,6 +5,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bson.types.ObjectId;
+
+import ru.tds.start.core.User;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
@@ -20,7 +27,7 @@ public class ImageDB {
 	private static DB db;
 	
 	@SuppressWarnings("deprecation")
-	public static void loadImageToDB(InputStream inputStream, String fileName) {
+	public static void loadImageToDB(InputStream inputStream, String fileName, User user) {
 		mongo = new MongoClient(SERVER);
 		db = mongo.getDB(DBNAME);
 
@@ -30,9 +37,16 @@ public class ImageDB {
 		// сохраняем фото в mongodb
 		GridFSInputFile gridFSInputFile;
 		try {
+			// создаем поля метаданных
+			int likes = 3;
+			DBObject metadata = new BasicDBObject("userId",user.get_Id());
+			metadata.put("imageName","");
+			metadata.put("description","");
+			metadata.put("likes", likes);
+			
 			gridFSInputFile = gridFS.createFile(inputStream);
 			gridFSInputFile.setFilename(fileName);
-			//gridFSInputFile.setMetaData(new DBObject("owner":"girl"));
+			gridFSInputFile.setMetaData(metadata);
 			gridFSInputFile.save();
 		} catch (Exception e) {
 			System.out.println("=============================== Exception. Не удалось сохранить файл в mongodb\n" + e.getMessage());
@@ -46,10 +60,7 @@ public class ImageDB {
 		mongo = new MongoClient(SERVER);
 		db = mongo.getDB(DBNAME);
 
-		// загружаем нашу картинку
 		File image = new File(fileWithPath);
-		
-		// создаем объект GridFS
 		GridFS gridFS = new GridFS(db); 
 		
 		// сохраняем фото в mongodb
@@ -70,7 +81,7 @@ public class ImageDB {
 	}
 	
 	@SuppressWarnings("deprecation")
-	public static InputStream getLatestImageFromDB() {
+	public static InputStream getLatestImage() {
 		mongo = new MongoClient(SERVER);
 		db = mongo.getDB(DBNAME);
 		GridFS gridFS = new GridFS(db);
@@ -83,9 +94,6 @@ public class ImageDB {
 		// берем самую первую картинку из выборки с учетом сортировки
 		imageGFS = gridFS.find(dbObject, sort).get(0);
 		if (imageGFS != null) {
-			System.out.println("::::::::::::::::::::::::::::: " + imageGFS);
-			//mongo.close();
-
 			/* читаем поток байтов из картинки
 			 * при этом используем буфферизированный поток BufferedInputStream - так быстрее,
 			 */
@@ -94,23 +102,62 @@ public class ImageDB {
 		} else 
 			return null;
 	}
-
+	
 	@SuppressWarnings("deprecation")
-	public static InputStream getImageByNameFromDB (String imageName) {
+	public static InputStream getImageById (String id) {
+		// проверяем HEX валидность id
+		if (!ObjectId.isValid(id))
+			return null;
+		// получаем из id - ObjectId
+		ObjectId objectId = new ObjectId(id);
+		
 		mongo = new MongoClient(SERVER);
 		db = mongo.getDB(DBNAME);
 		GridFS gridFS = new GridFS(db);
+		GridFSDBFile imageGFS = null;
 		
-		// ищем картинку в mongodb
-		GridFSDBFile imageGFS = gridFS.findOne(imageName);
-		//mongo.close();
-		// !!!!!!!!! сделать проверку на imageGFS == null 
+		// ищем картинку в mongodb по ее objectId 
+		imageGFS = gridFS.findOne(objectId);
 		
-		/* читаем поток байтов из картинки
-		*  при этом используем буфферизированный поток BufferedInputStream - так быстрее,
-		*/
-		InputStream inputStream = new BufferedInputStream(imageGFS.getInputStream());
-		
-		return inputStream;
+		if (imageGFS != null) {
+			System.out.println("хххххххххххххххххххххххххххххххх getImageById = " + imageGFS);
+			//mongo.close();
+
+			/* читаем поток байтов из картинки
+			 * при этом используем буфферизированный поток BufferedInputStream - так быстрее,
+			 */
+			InputStream inputStream = new BufferedInputStream(imageGFS.getInputStream());
+			
+			return inputStream;
+		} else 
+			return null;
 	}
+
+	@SuppressWarnings("deprecation")
+	public static List<String> getListImageId() {
+		mongo = new MongoClient(SERVER);
+		db = mongo.getDB(DBNAME);
+		GridFS gridFS = new GridFS(db);
+		List<String> listImageId = new ArrayList<String>();
+		
+		// создаем правило сортировки по полю "uploadDate" (наверху самые свежие)
+		DBObject sort = new BasicDBObject("uploadDate", -1);
+		DBObject dbObject = new BasicDBObject();
+
+		// получаем выборку картинок по запросу
+		List<GridFSDBFile> listGridFS = gridFS.find(dbObject, sort);
+		
+		if (!listGridFS.isEmpty()) {
+			// создаем массив id картинок
+			for (GridFSDBFile imageGFS : listGridFS) {
+				listImageId.add(imageGFS.getId().toString());
+			}
+			return listImageId;
+			
+		} else {
+			System.out.println("ээээээээээээээээээээээээээээээээээээээ  говорит getListImageId() : массив картинок нулевой.");
+			return null;
+		}
+	}
+
 }

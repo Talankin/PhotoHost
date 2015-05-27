@@ -8,7 +8,7 @@ $('#formMyProfile').hide();
 $('#formUpdateProfile').hide();
 
 // на страницу /photohost/ сразу грузим последнюю добавленную в БД картинку
-getImage();
+getLatestImage();
 
 //---------------  отрабатываем клики  ------------------------------
 $('#btnSignIn').click(function() {
@@ -94,6 +94,11 @@ $('#btnCancelUserCreate').click(function() {
 
 $('#urlToMyPhotos').click(function() {
 	signInWithToken(rootClientsURL + "/myphotos.html");
+	return false;
+});
+
+$('#btnGetImagesList').click(function() {
+	getImagesList();
 	return false;
 });
 
@@ -227,12 +232,24 @@ function updateUser() {
 	$('#confirmpassword').val("");
 }
 
-function getImage() {
-	var imageName = "2.jpg";
+function getLatestImage() {
 	// заливаем в div картинку в виде inputstream (предварительно раскодируем из base64 если нужно)
 	//$('#latestImage').html('<img src="data:image/jpeg;base64,' + response + '"/>');
-	$('#latestImage').html('<img src="' + rootURL + "/getimage" + 
+	$('#latestImage').html('<img src="' + rootURL + "/latestimage" + 
 			'" alt="Тут самое последнее добавленное фото"/>');
+}
+
+function getImagesList() {
+	$.ajax({
+		url: rootURL + "/myimages",
+		dataType: "text",
+		success: function(response){
+			$('#myImagesList').html(response);
+		},
+		error: function(jqXHR, textStatus, errorThrown){
+			alert('getImagesList error: ' + errorThrown + "  " + jqXHR.responseText);
+		}
+	});
 }
 
 function returnToPagePhotohost() {
