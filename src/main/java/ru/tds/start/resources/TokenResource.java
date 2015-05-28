@@ -53,12 +53,12 @@ public class TokenResource {
 		// берем userId, полученный из mongodb, для создания токена
 		String userId = document.getString("_id");
 
-		System.out.println("***************Нашли юзера в базе " + document.toJson());
+		System.err.println("***************Нашли юзера в базе " + document.toJson());
 		
 		// генерим и возвращаем токен
 		Token token = null;
 		try {
-			System.out.println("*************** пробуем создать токен ");
+			System.err.println("*************** пробуем создать токен ");
 			token = TokenDB.createToken(userId);
 		} catch (Exception e) {
 			System.err.println("*************** не получилось создать токен ");
@@ -68,7 +68,7 @@ public class TokenResource {
 		Cookie cookie = new Cookie("tokenId",token.getTokenId().toString());
 		NewCookie newCookie = new NewCookie(cookie);
 		
-		System.out.println("******************* возвращаем куки токен на страницу ");
+		System.err.println("******************* возвращаем куки токен на страницу ");
 		
 		//return Response.ok(tokenDoc.toJson()).type(MediaType.APPLICATION_JSON).build();
 		return Response.ok("response Ok").cookie(newCookie).build();

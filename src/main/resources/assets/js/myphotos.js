@@ -1,3 +1,5 @@
+//---------------  инициализация  ------------------------------
+$('#formMetadataImg').hide();
 var rootClientsURL = "http://localhost:8080/assets";
 var formUpload = document.getElementById("formLoadImage");
 var inputUpload = document.getElementById("inputLoadImage");
@@ -6,6 +8,13 @@ var buttonUpload = document.getElementById("btnLoadImage");
 // сразу грузим на страницу myphotos фотки пользователя
 getImagesList();
 
+//---------------  отрабатываем клики  ------------------------------
+//$('.metadata').click(function() { 			// работает только для существующих элементов
+$('body').on('click', '.metadata', function(){	// работает для всех (и для динамечески подгружаемых тоже)
+	$('#formMetadataImg').show();
+})
+
+//---------------  функции  ------------------------------
 formUpload.onsubmit = function(event) {
   event.preventDefault();
   

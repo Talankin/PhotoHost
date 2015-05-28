@@ -13,20 +13,37 @@
   }
   img {
     width: 150px;
+    cursor: pointer;
   }
   .table_center {
     width: 100%;
     border: 1px;
   }
-  .table_100 {
-    width: 100%;
-    border: 1px;
+  .table_30 {
+    width: 30%;
+    border: 1px solid gray;
     text-align: left;
+    margin-left: 0px;
   }
-  .td_left {
+  .td_left_50 {
+    width: 50%;
+    text-align: left;
+    border: 1px; /*solid green;*/
+  }
+  .td_left_33 {
     width: 33%;
     text-align: left;
     border: 1px; /*solid green;*/
+  }
+  .div_meta {
+    width: 550px;
+    height: 500px;
+    padding: 10px;
+    margin-left: -285px;
+    background: gray;
+    position: absolute;
+    top: 20px;
+    left: 50%;
   }
 </style>
 </head>
@@ -36,7 +53,7 @@
 <form id="formMyPhotos" action="/">
 <table class="table_center">
  <tr>
-   <td class="td_left">
+   <td class="td_left_33">
      <a id="urlReturnToPhotohost" href="">Вернуться в приложение</a>
    </td>
    <td width="33%"><H3 align="center">Мои фото</H3></td>
@@ -47,18 +64,29 @@
 
 <!-- Форма upload images =====================================      -->
 <form id="formLoadImage">
-<table class="table_100">
+<table class="table_30">
  <tr>
-   <td class="td_left">Добавьте фото</td>
+   <td class="td_left_50">Добавьте фото</td>
  </tr>
  <tr>
-   <td class="td_left"><input type="file" id="inputLoadImage" name="images" multiple />&nbsp;&nbsp;&nbsp;
+   <td class="td_left_50"><input type="file" id="inputLoadImage" name="images" multiple />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
        <button type="submit" id="btnLoadImage">Добавить</button>
    </td>
  </tr>
 </table>
+</form>
+
+<!-- Сюда сервер грузит картинки  =====================================      -->
 <div id="myImagesList">
 </div>
+
+
+<!-- Форма image metadata  =====================================      -->
+<form id="formMetadataImg">
+  <div id="divMetadataImg" class="div_meta">
+    div
+  </div>
 </form>
 
 <script src="js/jquery-1.7.1.min.js"></script>

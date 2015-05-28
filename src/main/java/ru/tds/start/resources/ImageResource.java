@@ -27,8 +27,8 @@ public class ImageResource {
 	private final static String TAG_TABLE_CLOSE = "</tr></table>";
 	private final static String TAG_TR_OPEN = "<tr>";
 	private final static String TAG_TR_CLOSE = "</tr>";
-	private final static String TAG_TD_OPEN = "<td><a href='index.html'>";
-	private final static String TAG_TD_CLOSE = "</a></td>";
+	private final static String TAG_TD_OPEN = "<td>";
+	private final static String TAG_TD_CLOSE = "</td>";
 	
 	
 	@POST
@@ -91,12 +91,12 @@ public class ImageResource {
 			// делаем по четыре фотки в строку
 			if ((i % 4) != 0) {
 				htmlRespons += TAG_TD_OPEN + 
-						"<img src='http://localhost:8080/photohost/imagebyid?id=" + imageId + "'>" +
+						"<img class='metadata' src='http://localhost:8080/photohost/imagebyid?id=" + imageId + "'>" +
 						TAG_TD_CLOSE;
 			// если фотка уже четвертая в строке
 			} else {
 				htmlRespons += TAG_TD_OPEN + 
-						"<img src='http://localhost:8080/photohost/imagebyid?id=" + imageId + "'>" +
+						"<img class='metadata' src='http://localhost:8080/photohost/imagebyid?id=" + imageId + "'>" +
 						TAG_TD_CLOSE +
 						TAG_TR_CLOSE;
 				// если будут еще фотки, то начинаем новую строку 
