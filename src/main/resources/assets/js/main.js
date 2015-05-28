@@ -97,11 +97,6 @@ $('#urlToMyPhotos').click(function() {
 	return false;
 });
 
-$('#btnGetImagesList').click(function() {
-	getImagesList();
-	return false;
-});
-
 //---------------  функции, вызываемые кликом  ------------------------------
 function signInGetToken() {
 	$('#formSignIn').ajaxSubmit({
@@ -237,19 +232,6 @@ function getLatestImage() {
 	//$('#latestImage').html('<img src="data:image/jpeg;base64,' + response + '"/>');
 	$('#latestImage').html('<img src="' + rootURL + "/latestimage" + 
 			'" alt="Тут самое последнее добавленное фото"/>');
-}
-
-function getImagesList() {
-	$.ajax({
-		url: rootURL + "/myimages",
-		dataType: "text",
-		success: function(response){
-			$('#myImagesList').html(response);
-		},
-		error: function(jqXHR, textStatus, errorThrown){
-			alert('getImagesList error: ' + errorThrown + "  " + jqXHR.responseText);
-		}
-	});
 }
 
 function returnToPagePhotohost() {

@@ -49,7 +49,7 @@ public class ImageDB {
 			gridFSInputFile.setMetaData(metadata);
 			gridFSInputFile.save();
 		} catch (Exception e) {
-			System.out.println("=============================== Exception. Не удалось сохранить файл в mongodb\n" + e.getMessage());
+			System.err.println("=============================== Exception. Не удалось сохранить файл в mongodb\n" + e.getMessage());
 		} finally {
 			mongo.close();
 		}
@@ -70,11 +70,11 @@ public class ImageDB {
 			gridFSInputFile.setFilename("siski");
 			gridFSInputFile.save();
 		} catch (FileNotFoundException e) {
-			System.out.println("=============================== FileNotFoundException");
+			System.err.println("=============================== FileNotFoundException");
 		} catch (IOException e) {
-			System.out.println("=============================== IOException. Не удалось сохранить файл в mongodb\n");
+			System.err.println("=============================== IOException. Не удалось сохранить файл в mongodb\n");
 		} catch (Exception e) {
-			System.out.println("=============================== Exception. Не удалось сохранить файл в mongodb\n" + e.getMessage());
+			System.err.println("=============================== Exception. Не удалось сохранить файл в mongodb\n" + e.getMessage());
 		} finally {
 			mongo.close();
 		}
@@ -120,7 +120,6 @@ public class ImageDB {
 		imageGFS = gridFS.findOne(objectId);
 		
 		if (imageGFS != null) {
-			System.out.println("хххххххххххххххххххххххххххххххх getImageById = " + imageGFS);
 			//mongo.close();
 
 			/* читаем поток байтов из картинки
@@ -134,7 +133,7 @@ public class ImageDB {
 	}
 
 	@SuppressWarnings("deprecation")
-	public static List<String> getListImageId() {
+	public static List<String> getListImageIdByUserId(String userId) {
 		mongo = new MongoClient(SERVER);
 		db = mongo.getDB(DBNAME);
 		GridFS gridFS = new GridFS(db);
@@ -142,10 +141,10 @@ public class ImageDB {
 		
 		// создаем правило сортировки по полю "uploadDate" (наверху самые свежие)
 		DBObject sort = new BasicDBObject("uploadDate", -1);
-		DBObject dbObject = new BasicDBObject();
-
+		DBObject query = new BasicDBObject("metadata.userId", userId);
+		
 		// получаем выборку картинок по запросу
-		List<GridFSDBFile> listGridFS = gridFS.find(dbObject, sort);
+		List<GridFSDBFile> listGridFS = gridFS.find(query, sort);
 		
 		if (!listGridFS.isEmpty()) {
 			// создаем массив id картинок
@@ -155,7 +154,7 @@ public class ImageDB {
 			return listImageId;
 			
 		} else {
-			System.out.println("ээээээээээээээээээээээээээээээээээээээ  говорит getListImageId() : массив картинок нулевой.");
+			System.err.println("ээээээээээээээээээээээээээээээээээээээ  говорит getListImageId() : массив картинок нулевой.");
 			return null;
 		}
 	}

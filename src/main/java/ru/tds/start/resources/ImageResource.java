@@ -42,8 +42,8 @@ public class ImageResource {
 		if (user.isNull()==true) 
 			return false; 
 		
-		System.out.println(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   я в ресурсе LoadImage fileDetail = " + 
-				fileDetail.getFileName() + "  " + fileDetail.getName() + "  " + fileDetail.getSize());
+		System.err.println(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   я в ресурсе LoadImage fileDetail = " + 
+				fileDetail.getFileName() + "  " + fileDetail.getName());
 		
 		ImageDB.loadImageToDB(inputStreamImages, fileDetail.getFileName(), user);
 		return true;
@@ -75,7 +75,7 @@ public class ImageResource {
 			return Response.ok().build(); 
 
 		// если не получили массив id картинок
-		List<String> listImageId = ImageDB.getListImageId();
+		List<String> listImageId = ImageDB.getListImageIdByUserId(user.get_Id());
 		if (listImageId == null)
 			return Response.ok().build();
 		if (listImageId.isEmpty())

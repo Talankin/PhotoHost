@@ -61,7 +61,7 @@ public class TokenResource {
 			System.out.println("*************** пробуем создать токен ");
 			token = TokenDB.createToken(userId);
 		} catch (Exception e) {
-			System.out.println("*************** не получилось создать токен ");
+			System.err.println("*************** не получилось создать токен ");
 			throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
 		}
 		
