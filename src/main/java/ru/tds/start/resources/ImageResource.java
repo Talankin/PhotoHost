@@ -1,11 +1,15 @@
 package ru.tds.start.resources;
 
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
 import io.dropwizard.auth.Auth;
 import io.dropwizard.auth.AuthenticationException;
 
+import javax.imageio.ImageIO;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -66,7 +70,6 @@ public class ImageResource {
 	
 	@GET
 	@Path("/myimages")
-	//@Produces("image/jpeg")
 	@Consumes(MediaType.APPLICATION_JSON) 
 	public Response generateUrlsOfMyImages(@Auth User user)
 			throws AuthenticationException {
@@ -74,8 +77,8 @@ public class ImageResource {
 		if (user.isNull()==true) 
 			return Response.ok().build(); 
 
-		// если не получили массив id картинок
 		List<String> listImageId = ImageDB.getListImageIdByUserId(user.get_Id());
+		// если не получили массив id картинок
 		if (listImageId == null)
 			return Response.ok().build();
 		if (listImageId.isEmpty())
@@ -91,12 +94,12 @@ public class ImageResource {
 			// делаем по четыре фотки в строку
 			if ((i % 4) != 0) {
 				htmlRespons += TAG_TD_OPEN + 
-						"<img class='metadata' src='http://localhost:8080/photohost/imagebyid?id=" + imageId + "'>" +
+						"<img class='img_mini' src='http://localhost:8080/photohost/imagebyid?id=" + imageId + "'>" +
 						TAG_TD_CLOSE;
 			// если фотка уже четвертая в строке
 			} else {
 				htmlRespons += TAG_TD_OPEN + 
-						"<img class='metadata' src='http://localhost:8080/photohost/imagebyid?id=" + imageId + "'>" +
+						"<img class='img_mini' src='http://localhost:8080/photohost/imagebyid?id=" + imageId + "'>" +
 						TAG_TD_CLOSE +
 						TAG_TR_CLOSE;
 				// если будут еще фотки, то начинаем новую строку 
