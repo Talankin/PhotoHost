@@ -99,10 +99,26 @@ public class UserDB {
 		mongo.close();
 		
 		if (document == null) {
-			System.out.println("User not found");
+			System.err.println("User not found");
 			return null;
 		}
 		
 		return document;
 	}
+	
+	public static String getFullnameById(String userId) {
+		mongo = new MongoClient("localhost");
+		db = mongo.getDatabase("photodb");
+		MongoCollection<Document> collection = db.getCollection("users");
+		Document document = collection.find(eq("_id", userId)).first();
+		mongo.close();
+		
+		if (document == null) {
+			System.err.println("User not found");
+			return null;
+		}
+		
+		return document.getString("fullname");
+	}
+
 }

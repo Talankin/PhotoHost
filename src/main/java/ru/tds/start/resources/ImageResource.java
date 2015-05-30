@@ -1,15 +1,11 @@
 package ru.tds.start.resources;
 
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
 import io.dropwizard.auth.Auth;
 import io.dropwizard.auth.AuthenticationException;
 
-import javax.imageio.ImageIO;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -126,5 +122,15 @@ public class ImageResource {
 		else
 			return Response.ok("картинка не найдена").build();
 	}
+	
+	@GET
+	@Path("/metadata")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public String getMetaDataByImageId(@QueryParam("id") String id) {
+		String metadata = ImageDB.getMetaDataByImageId(id);
+		return metadata;
+	}
+
 
 }

@@ -1,4 +1,5 @@
 //---------------  инициализация  ------------------------------
+// прячем DIV с метадатой
 $('#formMetadataImg').hide();
 var rootClientsURL = "http://localhost:8080/assets";
 var formUpload = document.getElementById("formLoadImage");
@@ -12,6 +13,7 @@ getImagesList();
 //$('.metadata').click(function() { 			// работает только для существующих элементов
 $('body').on('click', '.img_mini', function(){	// работает для всех (и для динамечески подгружаемых тоже)
 	var src = $(this).attr('src');
+	getMetaData(src);
 	$('#divMetadataImg').html('<img class="img_meta" src=' + src + '>');
 	$('#formMetadataImg').show();
 })
@@ -101,3 +103,41 @@ function getImagesList() {
 		}
 	});
 }
+
+function getMetaData(url) {
+	$.ajax({
+		url: rootURL + "/metadata?id=" + getImgIdFromUrl(url),
+		dataType: "json",
+		success: function(response){
+			var imageName = response.imageName;
+			var uploadDate = response.uploadDate;
+			var likes = response.likes;
+			var author = response.author;
+			var description = response.description;
+
+			// заполняем элементы метаданными
+			if ($.trim(imageName).length > 0) {
+				$('#imageName').val(imageName);
+			}
+			if ($.trim(author).length > 0) {
+				$('#author').text(author);
+			}
+			if ($.trim(description).length > 0) {
+				$('#description').val(description);
+			}
+			$('#uploadDate').text(uploadDate);
+			$('#likes').text(likes);
+			
+		},
+		error: function(jqXHR, textStatus, errorThrown){
+			alert('getMetaData error: ' + errorThrown + "  " + jqXHR.responseText);
+		}
+	});
+}
+
+//---------------  вспомогательные функции  ------------------------------
+function getImgIdFromUrl(url) {
+	  var pos = url.indexOf("id=") + 3;
+	  imgId = url.substring(pos);
+	  return imgId;
+	}

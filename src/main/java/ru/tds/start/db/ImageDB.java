@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +39,7 @@ public class ImageDB {
 		GridFSInputFile gridFSInputFile;
 		try {
 			// создаем поля метаданных
-			int likes = 3;
+			int likes = 0;
 			DBObject metadata = new BasicDBObject("userId",user.get_Id());
 			metadata.put("imageName","");
 			metadata.put("description","");
@@ -121,7 +122,6 @@ public class ImageDB {
 		
 		if (imageGFS != null) {
 			//mongo.close();
-
 			/* читаем поток байтов из картинки
 			 * при этом используем буфферизированный поток BufferedInputStream - так быстрее,
 			 */
@@ -158,5 +158,38 @@ public class ImageDB {
 			return null;
 		}
 	}
+
+	
+	@SuppressWarnings("deprecation")
+	public static String getMetaDataByImageId (String id) {
+		if (!ObjectId.isValid(id))
+			return null;
+		ObjectId objectId = new ObjectId(id);
+		
+		mongo = new MongoClient(SERVER);
+		db = mongo.getDB(DBNAME);
+		GridFS gridFS = new GridFS(db);
+		GridFSDBFile imageGFS = null;
+		
+		imageGFS = gridFS.findOne(objectId);
+		if (imageGFS != null) {
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+			
+			DBObject metadataObject = imageGFS.getMetaData();
+			String userId = metadataObject.get("userId").toString();
+			String author = UserDB.getFullnameById(userId);
+			String uploadDate = dateFormat.format(imageGFS.getUploadDate());
+			
+			metadataObject.put("author", author);
+			metadataObject.put("uploadDate", uploadDate);
+			mongo.close();
+			
+			return metadataObject.toString();
+		} else { 
+			mongo.close();
+			return null;
+		}
+	}
+
 
 }
