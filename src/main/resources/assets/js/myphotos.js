@@ -6,17 +6,34 @@ var formUpload = document.getElementById("formLoadImage");
 var inputUpload = document.getElementById("inputLoadImage");
 var buttonUpload = document.getElementById("btnLoadImage");
 
+// адрес фотки, с метаданными которой будем работать
+var src = "";
+var imageId = "";
 // сразу грузим на страницу myphotos фотки пользователя
 getImagesList();
 
 //---------------  отрабатываем клики  ------------------------------
 //$('.metadata').click(function() { 			// работает только для существующих элементов
 $('body').on('click', '.img_mini', function(){	// работает для всех (и для динамечески подгружаемых тоже)
-	var src = $(this).attr('src');
+	src = $(this).attr('src');
+	imageId = getImgIdFromUrl(src); 
 	getMetaData(src);
 	$('#divMetadataImg').html('<img class="img_meta" src=' + src + '>');
 	$('#formMetadataImg').show();
+	return false;
 })
+
+$('#btnUpdateMetadata').click(function() {
+	if ($.trim(fieldsMetadataToJson()).length > 2) {
+		updateMetadata();
+	}
+	return false;
+});
+
+$('#btnCancelMetaChange').click(function() {
+	$('#formMetadataImg').hide();
+	return false;
+});
 
 //---------------  функции  ------------------------------
 
@@ -88,8 +105,7 @@ formUpload.onsubmit = function(event) {
 	    }
 	  };
 	};
-}
-
+} //---------------  end function upload img to server  ------------------------------
 
 function getImagesList() {
 	$.ajax({
@@ -104,9 +120,9 @@ function getImagesList() {
 	});
 }
 
-function getMetaData(url) {
+function getMetaData() {
 	$.ajax({
-		url: rootURL + "/metadata?id=" + getImgIdFromUrl(url),
+		url: rootURL + "/metadata?id=" + imageId,
 		dataType: "json",
 		success: function(response){
 			var imageName = response.imageName;
@@ -118,12 +134,16 @@ function getMetaData(url) {
 			// заполняем элементы метаданными
 			if ($.trim(imageName).length > 0) {
 				$('#imageName').val(imageName);
+			} else {
+				$('#imageName').val("Редактировать название");
 			}
 			if ($.trim(author).length > 0) {
 				$('#author').text(author);
 			}
 			if ($.trim(description).length > 0) {
 				$('#description').val(description);
+			} else {
+				$('#description').val("Редактировать описание");
 			}
 			$('#uploadDate').text(uploadDate);
 			$('#likes').text(likes);
@@ -135,9 +155,57 @@ function getMetaData(url) {
 	});
 }
 
+
+function updateMetadata() {
+	$.ajax({
+		type: 'POST',
+		contentType: 'application/json',
+		url: rootURL + "/updatemetadata?id="  + imageId,
+		dataType: "text",
+		data: fieldsMetadataToJson(),
+		success: function(response){
+			if (response == "true") {
+				alert("Изменения сохранены");
+			}
+			else alert("Что-то пошло не так. Повторите попытку позже");
+		},
+		error: function(jqXHR, textStatus, errorThrown){
+			alert('updateMetadata error: ' + errorThrown + "  " + jqXHR.responseText);
+		}
+	});
+}
+
 //---------------  вспомогательные функции  ------------------------------
 function getImgIdFromUrl(url) {
 	  var pos = url.indexOf("id=") + 3;
 	  imgId = url.substring(pos);
 	  return imgId;
 	}
+
+
+function fieldsMetadataToJson() {
+	var imageName = $.trim($('#imageName').val());
+	var description = $.trim($('#description').val());
+	var str = '{';
+	var isNeedComma = false;
+	
+	// проверка на пустоту полей. отправляем на сервер только заполненные
+	if ( imageName.length > 0 && 
+			imageName != "Редактировать название") {
+		str += '"imageName":' + '"' + imageName + '"';
+		isNeedComma = true;
+	}
+	
+	if ( description.length > 0 &&
+			description != "Редактировать описание") {
+		if (isNeedComma){
+			str += ','
+		} 
+		str += '"description":' + '"' + description + '"}';
+	} else {
+		str += '}';
+	}
+	
+	var jsonData = JSON.parse(str);
+	return JSON.stringify(jsonData);
+}

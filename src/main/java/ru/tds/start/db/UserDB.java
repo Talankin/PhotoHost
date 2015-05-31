@@ -38,11 +38,6 @@ public class UserDB {
 		String login = doc.getString("login");
 		if (login == null) 
 			return;
-		String fullname = doc.getString("fullname");
-		String password = doc.getString("password");
-		
-		System.out.println("***********************     void updateUser : " + login + "  " + fullname + "  " + password);
-		System.out.println("***********************     doc.toJson()" + doc.toJson());
 		
 		mongo = new MongoClient("localhost");
 		db = mongo.getDatabase("photodb");
@@ -54,9 +49,6 @@ public class UserDB {
 
 	public static void deleteUser(Document doc) {
 		String login = doc.getString("login");
-		
-		System.out.println("  ---------------------------- я в deleteUser() - удаляем юзера " + login);
-		
 		if (login == null) 
 			return;
 
@@ -66,10 +58,9 @@ public class UserDB {
 		Document documentDetected = collection.find(eq("login", login)).first();
 		collection.deleteOne(documentDetected);
 		mongo.close();
-		
-		System.out.println("  ++++++++++++++++++++ я в deleteUser() - юзера удалили. возвращаемся в ресурс ");
 	}
 
+	
 	public static User getUserById(String userId) {
 		mongo = new MongoClient("localhost");
 		db = mongo.getDatabase("photodb");

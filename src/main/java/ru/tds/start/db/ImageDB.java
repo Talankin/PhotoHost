@@ -7,9 +7,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.json.JSONObject;
 
 import ru.tds.start.core.User;
 
@@ -191,5 +194,42 @@ public class ImageDB {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
+	public static boolean updateMetadata(Document doc, String id) {
+		if (!ObjectId.isValid(id))
+			return false;
+		ObjectId objectId = new ObjectId(id);
+
+		mongo = new MongoClient(SERVER);
+		db = mongo.getDB(DBNAME);
+		GridFS gridFS = new GridFS(db);
+		GridFSDBFile imageGFS = null;
+
+		// нашли документ mongo для апдейта
+		imageGFS = gridFS.findOne(objectId);
+
+		// получаем список полей для апдейта
+		JSONObject jsonObject = new JSONObject(doc.toJson()); 
+		Iterator<String> listKeys = jsonObject.keys();
+		
+		if (imageGFS != null) {
+			DBObject metadata = imageGFS.getMetaData();
+
+			// из метаданных удаляем поля, которые будем апдейтить
+			while (listKeys.hasNext()) {
+				String key = listKeys.next();
+				metadata.removeField(key);
+			}
+			metadata.putAll(doc);
+			imageGFS.setMetaData(metadata);
+			imageGFS.save();
+			mongo.close();
+			
+			return true;
+		} else { 
+			mongo.close();
+			return false;
+		}
+	}
 
 }

@@ -15,6 +15,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -132,5 +133,13 @@ public class ImageResource {
 		return metadata;
 	}
 
+	@POST
+	@Path("/updatemetadata")
+	@Produces(MediaType.APPLICATION_JSON) 
+	@Consumes(MediaType.APPLICATION_JSON) 
+	public boolean updateMetadata(Document doc, @QueryParam("id") String id) {
+		ImageDB.updateMetadata(doc, id);
+		return true;
+	}
 
 }

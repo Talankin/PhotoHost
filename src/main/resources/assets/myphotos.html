@@ -51,19 +51,19 @@
     left: 50%;
   }
   .div_img_big  {
-    border: 1px solid blue;
+    border: 1px; //solid blue;
   }
   .div_meta_bottom  {
-    border: 1px solid blue;
+    border: 1px; //solid blue;
     text-align: left;
   }
   .td_left {
     text-align: left;
-    border: 1px solid green;
+    border: 1px; //solid green;
   }
   .td_right {
     text-align: right;
-    border: 1px solid green;
+    border: 1px; //solid green;
   }
 </style>
 </head>
@@ -128,13 +128,21 @@
             &nbsp;&nbsp;
             <div id="likes" style="display: inline-block">0</div>
           </td>
-          <td class="td_right">&nbsp;</td>
+          <td class="td_left">&nbsp;</td>
         </tr>
         <tr>
           <td class="td_left">
             <textarea id="description" name="description" style="max-width:500px" cols="61" rows="3">Редактировать описание</textarea>
           </td>
-          <td class="td_right">&nbsp;</td>
+          <td class="td_left">&nbsp;</td>
+        </tr>
+        <tr>
+          <td class="td_right">
+            <button id="btnUpdateMetadata">Сохранить</button>
+          </td>
+          <td class="td_left">
+            <button id="btnCancelMetaChange">Отмена</button>
+          </td>
         </tr>
       </table>
     </div>
