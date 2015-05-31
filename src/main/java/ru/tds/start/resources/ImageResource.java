@@ -43,9 +43,6 @@ public class ImageResource {
 		if (user.isNull()==true) 
 			return false; 
 		
-		System.err.println(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,   я в ресурсе LoadImage fileDetail = " + 
-				fileDetail.getFileName() + "  " + fileDetail.getName());
-		
 		ImageDB.loadImageToDB(inputStreamImages, fileDetail.getFileName(), user);
 		return true;
 	}
@@ -124,6 +121,7 @@ public class ImageResource {
 			return Response.ok("картинка не найдена").build();
 	}
 	
+	
 	@GET
 	@Path("/metadata")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -133,13 +131,26 @@ public class ImageResource {
 		return metadata;
 	}
 
+	
 	@POST
 	@Path("/updatemetadata")
 	@Produces(MediaType.APPLICATION_JSON) 
 	@Consumes(MediaType.APPLICATION_JSON) 
 	public boolean updateMetadata(Document doc, @QueryParam("id") String id) {
-		ImageDB.updateMetadata(doc, id);
-		return true;
+		return ImageDB.updateMetadata(doc, id);
+	}
+
+	
+	@GET
+	@Path("/deletephoto")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public boolean deletePhotoByImageId(@Auth User user, @QueryParam("id") String id) 
+			throws AuthenticationException {
+		// если не прошли через Authenticator
+		if (user.isNull()==true) 
+			return false; 
+
+		return ImageDB.deletePhotoByImageId(id);
 	}
 
 }

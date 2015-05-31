@@ -190,7 +190,6 @@ function deleteUser() {
 				"", 
 				""),
 		success: function(response){
-			//alert(response);
 			if (response == "true") {
 				alert("Профиль удален");
 				document.location = rootClientsURL + "/index.html";
@@ -202,29 +201,6 @@ function deleteUser() {
 			document.location = rootClientsURL + "/index.html";
 		}
 	});
-}
-
-function updateUser() {
-	$.ajax({
-		type: 'POST',
-		contentType: 'application/json',
-		url: rootURL + "/update",
-		dataType: "text",
-		data: formsUserToJson( document.getElementById('loginup').innerHTML,
-				$('#fullnameup').val(),
-				$('#password').val()),
-		success: function(response){
-			if (response == "true") {
-				alert("Изменения приняты");
-			}
-			else alert("Что-то пошло не так. Повторите попытку позже");
-		},
-		error: function(jqXHR, textStatus, errorThrown){
-			alert('UpdateUser error: ' + errorThrown + "  " + jqXHR.responseText);
-		}
-	});
-	$('#password').val("");
-	$('#confirmpassword').val("");
 }
 
 function getLatestImage() {
@@ -257,16 +233,16 @@ function formUserCreateToJson() {
 
 function formsUserToJson(jLogin, jFullname, jPassword) {
 	var str = '{';
-	// проверка на пустоту полей. отправляем на сервер только заполненные
+	/* // проверка на пустоту полей. отправляем на сервер только заполненные */
 	if ( $.trim(jLogin).length > 0 ) {
 		str += '"login":' + '"' + $.trim(jLogin) + '"';
 	} else {
 		return null;
 	}
 	
-	if ( $.trim(jFullname).length > 0 ) {
-		str += ',"fullname":' + '"' + $.trim(jFullname) + '"';
-	}
+	//if ( $.trim(jFullname).length > 0 ) {
+	str += ',"fullname":' + '"' + $.trim(jFullname) + '"';
+	//}
 
 	if ( $.trim(jPassword).length > 0 ) {
 		str += ',"password":' + '"' + $.trim(jPassword) + '"}';

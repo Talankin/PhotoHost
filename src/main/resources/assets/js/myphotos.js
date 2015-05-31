@@ -24,9 +24,9 @@ $('body').on('click', '.img_mini', function(){	// работает для все
 })
 
 $('#btnUpdateMetadata').click(function() {
-	if ($.trim(fieldsMetadataToJson()).length > 2) {
-		updateMetadata();
-	}
+	//if ($.trim(fieldsMetadataToJson()).length > 2) {
+	updateMetadata();
+	//}
 	return false;
 });
 
@@ -34,6 +34,15 @@ $('#btnCancelMetaChange').click(function() {
 	$('#formMetadataImg').hide();
 	return false;
 });
+
+$('#imgDelete').click(function() {
+	if (confirm("Удалить фото ?")) {
+		deletePhoto();
+	} else return false;
+	
+	return false;
+});
+
 
 //---------------  функции  ------------------------------
 
@@ -175,6 +184,25 @@ function updateMetadata() {
 	});
 }
 
+
+function deletePhoto() {
+	$.ajax({
+		contentType: 'application/json',
+		url: rootURL + "/deletephoto?id="  + imageId,
+		dataType: "text",
+		success: function(response){
+			if (response == "true") {
+				//alert("Фото удалено");
+				document.location = rootClientsURL + "/myphotos.html";
+			}
+			else alert("Что-то пошло не так. Повторите попытку позже");
+		},
+		error: function(jqXHR, textStatus, errorThrown){
+			alert('deletePhoto error: ' + errorThrown + "  " + jqXHR.responseText);
+		}
+	});
+}
+
 //---------------  вспомогательные функции  ------------------------------
 function getImgIdFromUrl(url) {
 	  var pos = url.indexOf("id=") + 3;
@@ -189,15 +217,15 @@ function fieldsMetadataToJson() {
 	var str = '{';
 	var isNeedComma = false;
 	
-	// проверка на пустоту полей. отправляем на сервер только заполненные
-	if ( imageName.length > 0 && 
-			imageName != "Редактировать название") {
+	/* // проверка на пустоту полей. отправляем на сервер только заполненные 
+	if ( imageName.length > 0 && */
+	if (imageName != "Редактировать название") {
 		str += '"imageName":' + '"' + imageName + '"';
 		isNeedComma = true;
 	}
 	
-	if ( description.length > 0 &&
-			description != "Редактировать описание") {
+	//if ( description.length > 0 &&
+	if (description != "Редактировать описание") {
 		if (isNeedComma){
 			str += ','
 		} 

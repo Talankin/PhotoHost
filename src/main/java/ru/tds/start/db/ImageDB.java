@@ -1,5 +1,7 @@
 package ru.tds.start.db;
 
+import static com.mongodb.client.model.Filters.eq;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,6 +22,8 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoException;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSInputFile;
@@ -231,5 +235,30 @@ public class ImageDB {
 			return false;
 		}
 	}
+	
+	
+	@SuppressWarnings("deprecation")
+	public static boolean deletePhotoByImageId(String id) {
+		if (!ObjectId.isValid(id))
+			return false;
+		ObjectId objectId = new ObjectId(id);
+
+		mongo = new MongoClient(SERVER);
+		db = mongo.getDB(DBNAME);
+		GridFS gridFS = new GridFS(db);
+
+		try {
+			gridFS.remove(objectId);
+		} catch (MongoException e) {
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ ошибка удаления фото из gridfs " + e.getMessage());
+			return false;
+		} finally {
+			mongo.close();
+		}
+		return true;
+
+		
+	}
+
 
 }
