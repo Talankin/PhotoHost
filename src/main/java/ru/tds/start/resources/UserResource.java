@@ -2,10 +2,14 @@ package ru.tds.start.resources;
 
 import io.dropwizard.auth.Auth;
 import io.dropwizard.auth.AuthenticationException;
+
 import org.bson.Document;
+
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+
 import ru.tds.start.core.User;
+import ru.tds.start.db.ImageDB;
 import ru.tds.start.db.UserDB;
 
 @Path("/photohost")
@@ -51,6 +55,10 @@ public class UserResource {
 		if (user.isNull()==true) 
 			return false; 
 		
+		// удаляем все фото пользователя
+		//TO DO:
+		ImageDB.deletePhotosByUserId(user.get_Id());
+		// удаляем самого пользователя
 		UserDB.deleteUser(doc);
 		return true;
 	}

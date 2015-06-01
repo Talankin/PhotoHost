@@ -256,9 +256,36 @@ public class ImageDB {
 			mongo.close();
 		}
 		return true;
-
-		
 	}
 
+	
+	@SuppressWarnings("deprecation")
+	public static boolean deletePhotosByUserId(String userId) {
+		mongo = new MongoClient(SERVER);
+		db = mongo.getDB(DBNAME);
+		GridFS gridFS = new GridFS(db);
+		DBObject query = new BasicDBObject("metadata.userId", userId);
+		
+		// получаем выборку картинок по запросу
+		List<GridFSDBFile> listGridFS = gridFS.find(query);
+		
+		if (listGridFS.isEmpty()) {
+			System.err.println("ээээээээээээээээээээээээээээээээээээээ  говорит deletePhotosByUserId() : массив картинок нулевой.");
+			return false;
+		}
+
+		try {
+			// удаляем каждую фотку в массиве
+			for (GridFSDBFile imageGFS : listGridFS) {
+				gridFS.remove(imageGFS);
+			}
+			return true;
+		} catch (MongoException e) {
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ ошибка удаления фото из gridfs " + e.getMessage());
+			return false;
+		} finally {
+			mongo.close();
+		}
+	}
 
 }

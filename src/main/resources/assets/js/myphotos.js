@@ -105,7 +105,8 @@ formUpload.onsubmit = function(event) {
 	    if (xmlHttpRequest.status == 200) {
 	      // файлы загружены на сервер
 	      buttonUpload.innerHTML="Добавить";
-	      alert("файлы загружены " + response);
+	      alert("файлы загружены");
+	      document.location.href = rootClientsURL + "/myphotos.html";
 	    } else if (xmlHttpRequest.status == 401) {
 			alert("Для работы с приложением PhotoHost необходимо ввести логин и пароль");
 			document.location.href = rootClientsURL + "/index.html";
