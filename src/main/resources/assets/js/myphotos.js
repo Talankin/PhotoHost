@@ -43,6 +43,11 @@ $('#imgDelete').click(function() {
 	return false;
 });
 
+$('#imgLikes').click(function() {
+	likeIncrement();
+	return false;
+});
+
 
 //---------------  функции  ------------------------------
 
@@ -203,6 +208,25 @@ function deletePhoto() {
 		}
 	});
 }
+
+
+function likeIncrement() {
+	$.ajax({
+		contentType: 'application/json',
+		url: rootURL + "/like?id="  + imageId,
+		dataType: "text",
+		success: function(response){
+			if (response != "-1") {
+				$('#likes').text(response);
+			}
+			else alert("Что-то пошло не так, лайк не работает");
+		},
+		error: function(jqXHR, textStatus, errorThrown){
+			alert('setLike error: ' + errorThrown + "  " + jqXHR.responseText);
+		}
+	});
+}
+
 
 //---------------  вспомогательные функции  ------------------------------
 function getImgIdFromUrl(url) {

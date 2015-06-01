@@ -24,6 +24,7 @@ import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSInputFile;
@@ -33,6 +34,7 @@ public class ImageDB {
 	private final static String DBNAME = "photodb";
 	private static MongoClient mongo;
 	private static DB db;
+	private static MongoDatabase mDb;
 	
 	@SuppressWarnings("deprecation")
 	public static void loadImageToDB(InputStream inputStream, String fileName, User user) {
@@ -283,6 +285,38 @@ public class ImageDB {
 		} catch (MongoException e) {
 			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ ошибка удаления фото из gridfs " + e.getMessage());
 			return false;
+		} finally {
+			mongo.close();
+		}
+	}
+
+	
+	public static int likeIncrement(String id) {
+		if (!ObjectId.isValid(id))
+			return 0;
+		ObjectId objectId = new ObjectId(id);
+
+		mongo = new MongoClient(SERVER);
+		mDb = mongo.getDatabase(DBNAME);
+		MongoCollection<Document> collection = mDb.getCollection("fs.files");
+		Document documentDetected = collection.find(eq("_id", objectId)).first();
+		if (documentDetected.isEmpty())
+			return -1;
+		
+		int likes = -1;
+		try {
+			// берем количество лайков из БД, увеличиваем и возвращаем обратно в БД
+			Document metadata = (Document)documentDetected.get("metadata");
+			likes = metadata.getInteger("likes");
+			if (likes == -1 )
+				return -1;
+			likes ++;
+			collection.updateOne(documentDetected, new BasicDBObject("$set", new BasicDBObject("metadata.likes",likes)));
+			
+			return likes;
+		} catch (Exception e) {
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ говорит likeIncrement() - не удалось обновить лайк");
+			return -1;
 		} finally {
 			mongo.close();
 		}

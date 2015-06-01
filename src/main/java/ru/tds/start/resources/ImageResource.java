@@ -153,4 +153,17 @@ public class ImageResource {
 		return ImageDB.deletePhotoByImageId(id);
 	}
 
+	
+	@GET
+	@Path("/like")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public int likeIncrement(@Auth User user, @QueryParam("id") String id) 
+			throws AuthenticationException {
+		// если не прошли через Authenticator
+		if (user.isNull()==true) 
+			return -1; 
+
+		return ImageDB.likeIncrement(id);
+	}
+
 }

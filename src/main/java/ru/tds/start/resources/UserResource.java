@@ -56,7 +56,6 @@ public class UserResource {
 			return false; 
 		
 		// удаляем все фото пользователя
-		//TO DO:
 		ImageDB.deletePhotosByUserId(user.get_Id());
 		// удаляем самого пользователя
 		UserDB.deleteUser(doc);
