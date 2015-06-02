@@ -53,6 +53,10 @@ public class ImageDB {
 			metadata.put("imageName","");
 			metadata.put("description","");
 			metadata.put("likes", likes);
+			List<BasicDBObject> likesListUserId = new ArrayList<>();
+			metadata.put("likesListUserId", likesListUserId);
+			
+			System.err.println("oooooooooooooooooooooooooooooooooooooooo new metadata : " + metadata.toString());
 			
 			gridFSInputFile = gridFS.createFile(inputStream);
 			gridFSInputFile.setFilename(fileName);
@@ -183,12 +187,12 @@ public class ImageDB {
 		imageGFS = gridFS.findOne(objectId);
 		if (imageGFS != null) {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
-			
+			// взяли коллекцию метадада
 			DBObject metadataObject = imageGFS.getMetaData();
 			String userId = metadataObject.get("userId").toString();
 			String author = UserDB.getFullnameById(userId);
 			String uploadDate = dateFormat.format(imageGFS.getUploadDate());
-			
+			// добавляем к коллекции метадата еще данные для страницы
 			metadataObject.put("author", author);
 			metadataObject.put("uploadDate", uploadDate);
 			mongo.close();
@@ -290,32 +294,41 @@ public class ImageDB {
 		}
 	}
 
-	
-	public static int likeIncrement(String id) {
+	public static int likeIncrement(String id, String userId) {
 		if (!ObjectId.isValid(id))
-			return 0;
+			return -1;
 		ObjectId objectId = new ObjectId(id);
-
+		
 		mongo = new MongoClient(SERVER);
 		mDb = mongo.getDatabase(DBNAME);
 		MongoCollection<Document> collection = mDb.getCollection("fs.files");
-		Document documentDetected = collection.find(eq("_id", objectId)).first();
-		if (documentDetected.isEmpty())
-			return -1;
-		
+
 		int likes = -1;
 		try {
-			// берем количество лайков из БД, увеличиваем и возвращаем обратно в БД
-			Document metadata = (Document)documentDetected.get("metadata");
-			likes = metadata.getInteger("likes");
-			if (likes == -1 )
+			// ищем лайкнувшего юзера
+			Document query = new Document("_id", objectId);
+			query.put("metadata.likesListUserId", userId);
+			Document document = collection.find(query).first();
+
+			// если юзер уже ставил лайк, то на выход
+			if (document != null) {
 				return -1;
-			likes ++;
-			collection.updateOne(documentDetected, new BasicDBObject("$set", new BasicDBObject("metadata.likes",likes)));
+			}
 			
+			document = collection.find(eq("_id", objectId)).first();
+			// двойной апдейт: добавляем лайкнувшего юзера и лайк++
+			Document updateQuery = new Document("$push", new BasicDBObject("metadata.likesListUserId",userId));
+			updateQuery.put("$inc", new BasicDBObject("metadata.likes",1));
+			collection.updateOne(document, updateQuery); 
+			
+			// возвращаем количество лайков из БД
+			document = collection.find(eq("_id", objectId)).first();
+			Document metadata = (Document)document.get("metadata");
+			likes = metadata.getInteger("likes");
+
 			return likes;
 		} catch (Exception e) {
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ говорит likeIncrement() - не удалось обновить лайк");
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ говорит likeIncrement() - не удалось обновить лайк\n" + e.getMessage());
 			return -1;
 		} finally {
 			mongo.close();

@@ -163,7 +163,7 @@ public class ImageResource {
 		if (user.isNull()==true) 
 			return -1; 
 
-		return ImageDB.likeIncrement(id);
+		return ImageDB.likeIncrement(id, user.get_Id());
 	}
 
 }

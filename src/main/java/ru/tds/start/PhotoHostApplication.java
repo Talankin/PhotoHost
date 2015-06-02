@@ -1,7 +1,5 @@
 package ru.tds.start;
 
-import java.util.Set;
-
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 import ru.tds.auth.PhotoHostAuthFactory;

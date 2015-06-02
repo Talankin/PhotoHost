@@ -218,8 +218,8 @@ function likeIncrement() {
 		success: function(response){
 			if (response != "-1") {
 				$('#likes').text(response);
-			}
-			else alert("Что-то пошло не так, лайк не работает");
+			} else 
+				return null;
 		},
 		error: function(jqXHR, textStatus, errorThrown){
 			alert('setLike error: ' + errorThrown + "  " + jqXHR.responseText);
