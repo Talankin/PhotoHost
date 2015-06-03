@@ -82,6 +82,9 @@ public class PhotoHostAuthFactory<T> extends AuthFactory<String, T>  {
 
 					// передаем распарсенный куки в мой authenticator через метод интерфейса
 					final Optional<T> result = authenticator().authenticate(tokenId);
+					System.out.println("-------------------------------- fabrica says tokenId : " + tokenId);
+					System.out.println("-------------------------------- fabrica says result.get() : " + result.get());
+					
 					if (result.isPresent()) {
 						return result.get();
 					}

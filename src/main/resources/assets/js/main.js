@@ -7,27 +7,14 @@ var fullname = "";
 $('#formMyProfile').hide();
 $('#formUpdateProfile').hide();
 
-// на страницу /photohost/ сразу грузим последнюю добавленную в БД картинку
-getLatestImage();
 
 //---------------  отрабатываем клики  ------------------------------
-$('#btnSignIn').click(function() {
-	signInGetToken();
-	return false;
-});
-
 $('#btnToPageCreate').click(function() {
 	//sendGetRequest();
 	document.location.href = rootClientsURL + "/register.html";
 	return false;
 });
 
-$('#btnUserCreate').click(function() {
-	if (confirmPasswordIsEqual() == true) 
-		createUser();
-	else alert("Введенные пароли не совпадают");
-	return false;
-});
 
 $('#btnToPageUpdate').click(function() {
 	//прячем форму профиля и показываем форму update профиля
@@ -51,11 +38,6 @@ $('#btnUpdate').click(function() {
 
 $('#btnCancelUpdate').click(function() {
 	returnToPagePhotohost();
-	return false;
-});
-
-$('#btnToPageLogin').click(function() {
-	document.location.href = rootClientsURL + "/signin.html";
 	return false;
 });
 
@@ -97,21 +79,22 @@ $('#urlToMyPhotos').click(function() {
 	return false;
 });
 
-//---------------  функции, вызываемые кликом  ------------------------------
-function signInGetToken() {
-	$('#formSignIn').ajaxSubmit({
-		type: 'POST',
-		url: rootTokenURL,
-		dataType: "text",
-		success: function(response){
-			signInWithToken(rootClientsURL + "/photohost.html");
-		},
-		error: function(jqXHR, textStatus, errorThrown){
-			alert('signInGetToken error: ' + errorThrown + "  " + jqXHR.responseText, + "  " + textStatus);
-		}
-	});
-}
 
+$('#closeMetadata').click(function() {
+	$('#formMetadataImg').hide();
+	return false;
+});
+
+
+$(document).keydown(function(e){
+	// жмем ESC и закрываем метаданные фотки
+	if (e.keyCode == 27) {
+		$('#formMetadataImg').hide();
+	}
+})
+
+
+//---------------  функции, вызываемые кликом и не только  ------------------------------
 function signInWithToken(redirectUrl) {
 	$.ajax({
 		url: rootURL + "/auth",
@@ -132,27 +115,6 @@ function signInWithToken(redirectUrl) {
 			//alert('signInWithToken error: ' + errorThrown + "  " + jqXHR.responseText, + "  " + textStatus);
 			alert("Для работы с приложением PhotoHost необходимо ввести логин и пароль");
 			document.location.href = rootClientsURL + "/index.html";
-		}
-	});
-}
-
-function createUser() {
-	$.ajax({
-		type: 'POST',
-		contentType: 'application/json',
-		url: rootURL + "/create",
-		dataType: "text",
-		data: formUserCreateToJson(),
-		success: function(response){
-			if (response == "true") {
-				alert("Профиль зарегистрирован");
-			}
-			else alert("Что-то пошло не так. Повторите попытку позже");
-			
-			signInWithToken(rootClientsURL + "/photohost.html");
-		},
-		error: function(jqXHR, textStatus, errorThrown){
-			alert('createUser error: ' + errorThrown + "  " + jqXHR.responseText);
 		}
 	});
 }
@@ -203,12 +165,6 @@ function deleteUser() {
 	});
 }
 
-function getLatestImage() {
-	// заливаем в div картинку в виде inputstream (предварительно раскодируем из base64 если нужно)
-	//$('#latestImage').html('<img src="data:image/jpeg;base64,' + response + '"/>');
-	$('#latestImage').html('<img src="' + rootURL + "/latestimage" + 
-			'" alt="Тут самое последнее добавленное фото"/>');
-}
 
 function returnToPagePhotohost() {
 	// показываем исходную форму фотохост, остальные прячем

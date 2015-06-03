@@ -35,7 +35,7 @@ public final class PhotoHostAuthenticator
 		// берем user по userId
 		User user = UserDB.getUserById(userId);
 		
-		System.out.println("жжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжж auethnticator says");
+		System.out.println("жжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжжж auethnticator says" + user.toJson());
 		
 		// возвращаем user для дальнейшей работы
 		return Optional.of(user);

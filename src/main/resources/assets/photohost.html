@@ -4,8 +4,48 @@
 <meta charset="utf-8">
 <title>PhotoHost</title>
 <style>
-  img {
-    height: 350px;
+  .img_mini {
+    max-width: 450px;
+    max-height: 350px;
+    cursor: pointer;
+  }
+  .div_meta {
+    width: 680px;
+    height: 700px;
+    padding: 10px;
+    padding-top : 0px;
+    margin-left: -350px;
+    background: #E3E0E0;
+    position: absolute;
+    top: 10px;
+    left: 50%;
+  }
+  .img_meta {
+    max-width: 670px;
+    max-height: 500px;
+    cursor: pointer;
+  }
+  .div_meta_bottom  {
+    border: 1px;// solid blue;
+    text-align: left;
+  }
+  .td_left {
+    text-align: left;
+    border: 1px;// solid green;
+  }
+  .td_right {
+    text-align: right;
+    border: 1px;// solid green;
+  }
+  .a_button {
+    background-color: black;
+    color: white;
+    display: block;
+    height: 20px;
+    line-height: 20px;
+    text-decoration: none;
+    width: 100px;
+    text-align: center;
   }
 </style>
 </head>
@@ -23,10 +63,17 @@
       <br><a id="urlToMyPhotos" href="myphotos.html">Мои фотографии</a>
     </td>
   </tr>
+  <tr>
+    <td width="33%"></td>
+    <td width="33%" align="center">
+      <div id="latestImage"></div>
+      <!--img src="http://localhost:8080/photohost/latestimage" class="img_mini"-->
+    </td>
+    <td></td>
+  </tr>
 </table>
-<div id="latestImage" align="center">
-Здесь будет самое последнее добавленное фото
-</div>
+<!--div id="latestImage" class="img_mini" align="center">
+</div-->
 </form>
 
 <!-- Форма профиля =====================================      -->
@@ -132,10 +179,55 @@
 </form>
 
 
+<!-- Форма image metadata  =====================================      -->
+<form id="formMetadataImg">
+  <div id="divMeta" class="div_meta" align="center">
+    <table width="98%" border="0" cellspacing="2" cellpadding="0">
+      <tr>
+        <td class="td_right">
+          <a id="closeMetadata" href="">Закрыть</a>
+        </td>
+      </tr>
+    </table>
+    <div id="divMetadataImg"></div>
+    <div id="divMetadataBottom" class="div_meta_bottom">
+      <table width="100%" border="0" cellspacing="2" cellpadding="2">
+        <tr>
+          <td class="td_left" width="75%">
+            <div id="imageName"></div>
+          </td>
+          <td class="td_left">
+            <div id="author">Автор</div>
+          </td>
+        </tr>
+        <tr>
+          <td class="td_left">
+            <div style="display: inline-block;">Добавлена</div>
+            <div id="uploadDate" style="display: inline-block; width:200px"></div>
+            <div style="display: inline-block;">| Супер</div>
+            &nbsp;&nbsp;
+            <img id="imgLikes" src="like.png" style="display: inline-block; cursor: pointer;">
+            &nbsp;&nbsp;
+            <div id="likes" style="display: inline-block">0</div>
+          </td>
+          <td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td class="td_left">
+            <div id="description"></div>
+          </td>
+          <td class="td_left">&nbsp;</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</form>
+
+
 <script src="js/jquery-1.7.1.min.js"></script>
 <script src="js/jquery.form.min.js"></script>
 <script src="js/main.js"></script>
-
+<script src="js/photohost.js"></script>
 
 </body>
 </html>

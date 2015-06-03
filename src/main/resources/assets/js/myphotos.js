@@ -48,7 +48,6 @@ $('#imgLikes').click(function() {
 	return false;
 });
 
-
 //---------------  функции  ------------------------------
 
 //---------------  upload img to server  ------------------------------
@@ -121,6 +120,7 @@ formUpload.onsubmit = function(event) {
 	  };
 	};
 } //---------------  end function upload img to server  ------------------------------
+
 
 function getImagesList() {
 	$.ajax({

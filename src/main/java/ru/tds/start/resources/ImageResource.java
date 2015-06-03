@@ -48,7 +48,7 @@ public class ImageResource {
 	}
 
 	
-	@GET
+	/*@GET
 	@Path("/latestimage")
 	@Produces("image/jpeg")
 	@Consumes(MediaType.APPLICATION_JSON) 
@@ -56,21 +56,42 @@ public class ImageResource {
 			throws AuthenticationException {
 		// если не прошли через Authenticator
 		if (user.isNull()==true) 
-			return Response.noContent().build(); 
+			return Response.ok().build(); 
 		
 		return Response.ok(ImageDB.getLatestImage()).build();
-	}
+	}*/
 
+
+	@GET
+	@Path("/latestimage")
+	@Consumes(MediaType.APPLICATION_JSON) 
+	public Response getUrlOfLatestImage(@Auth User user)
+			throws AuthenticationException {
+		// если не прошли через Authenticator
+		if (user.isNull()==true) 
+			return Response.ok().build(); 
+		
+		// генерим урл для картинки на главную страницу
+		String imageId = ImageDB.getIdOfLatestImage();
+		String htmlRespons = "<img class='img_mini' src='http://localhost:8080/photohost/imagebyid?id=" + imageId + "'>";
+		
+		return Response.ok(htmlRespons).build();
+	}
+	
 	
 	@GET
 	@Path("/myimages")
 	@Consumes(MediaType.APPLICATION_JSON) 
 	public Response generateUrlsOfMyImages(@Auth User user)
 			throws AuthenticationException {
+
+		System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит ресурс generateUrlsOfMyImages : пробую взять user ");
+		System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит ресурс generateUrlsOfMyImages : user " + user.toJson());
+		
 		// если не прошли через Authenticator
 		if (user.isNull()==true) 
 			return Response.ok().build(); 
-
+		
 		List<String> listImageId = ImageDB.getListImageIdByUserId(user.get_Id());
 		// если не получили массив id картинок
 		if (listImageId == null)
@@ -80,6 +101,8 @@ public class ImageResource {
 		
 		// определяем размер массива
 		int listSize = listImageId.size();
+		
+		System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит ресурс generateUrlsOfMyImages : взяли размер массива картинок " + listSize);
 
 		// понеслась генерация URL-ов
 		String htmlRespons = TAG_TABLE_OPEN;
@@ -104,7 +127,7 @@ public class ImageResource {
 			i++;
 		}
 		htmlRespons += TAG_TABLE_CLOSE;
-		
+		System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит ресурс generateUrlsOfMyImages : возвращаем массив url ");
 		return Response.ok(htmlRespons).build();
 	}
 

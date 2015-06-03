@@ -56,8 +56,6 @@ public class ImageDB {
 			List<BasicDBObject> likesListUserId = new ArrayList<>();
 			metadata.put("likesListUserId", likesListUserId);
 			
-			System.err.println("oooooooooooooooooooooooooooooooooooooooo new metadata : " + metadata.toString());
-			
 			gridFSInputFile = gridFS.createFile(inputStream);
 			gridFSInputFile.setFilename(fileName);
 			gridFSInputFile.setMetaData(metadata);
@@ -94,7 +92,7 @@ public class ImageDB {
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
+	/*@SuppressWarnings("deprecation")
 	public static InputStream getLatestImage() {
 		mongo = new MongoClient(SERVER);
 		db = mongo.getDB(DBNAME);
@@ -108,14 +106,39 @@ public class ImageDB {
 		// берем самую первую картинку из выборки с учетом сортировки
 		imageGFS = gridFS.find(dbObject, sort).get(0);
 		if (imageGFS != null) {
-			/* читаем поток байтов из картинки
-			 * при этом используем буфферизированный поток BufferedInputStream - так быстрее,
-			 */
+			// читаем поток байтов из картинки
+			// при этом используем буфферизированный поток BufferedInputStream - так быстрее,
 			InputStream inputStream = new BufferedInputStream(imageGFS.getInputStream());
 			return inputStream;
 		} else 
 			return null;
+	}*/
+	
+
+	@SuppressWarnings("deprecation")
+	public static String getIdOfLatestImage() {
+		mongo = new MongoClient(SERVER);
+		db = mongo.getDB(DBNAME);
+		GridFS gridFS = new GridFS(db);
+		GridFSDBFile imageGFS = null;
+		
+		// создаем правило сортировки по полю "uploadDate" (наверху самые свежие)
+		DBObject sort = new BasicDBObject("uploadDate", -1);
+		DBObject dbObject = new BasicDBObject();
+
+		// берем самую первую картинку из выборки с учетом сортировки
+		imageGFS = gridFS.find(dbObject, sort).get(0);
+		if (imageGFS != null) {
+			String imageId = imageGFS.getId().toString();
+			mongo.close();
+			return imageId;
+		} else { 
+			mongo.close();
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит getIdOfLatestImage() : не удалось взять imageId");
+			return null;
+		}
 	}
+
 	
 	@SuppressWarnings("deprecation")
 	public static InputStream getImageById (String id) {
@@ -156,18 +179,23 @@ public class ImageDB {
 		DBObject sort = new BasicDBObject("uploadDate", -1);
 		DBObject query = new BasicDBObject("metadata.userId", userId);
 		
+		
+		System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит getListImageIdByUserId : берем отсортированный массив картинок");
 		// получаем выборку картинок по запросу
 		List<GridFSDBFile> listGridFS = gridFS.find(query, sort);
-		
+		System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит getListImageIdByUserId : взяли отсортированный массив картинок");
 		if (!listGridFS.isEmpty()) {
 			// создаем массив id картинок
 			for (GridFSDBFile imageGFS : listGridFS) {
 				listImageId.add(imageGFS.getId().toString());
 			}
+			mongo.close();
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит getListImageIdByUserId : возвращаем отсортированный массив картинок в ресурс");
 			return listImageId;
 			
 		} else {
-			System.err.println("ээээээээээээээээээээээээээээээээээээээ  говорит getListImageId() : массив картинок нулевой.");
+			mongo.close();
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит getListImageId() : массив картинок нулевой.");
 			return null;
 		}
 	}
