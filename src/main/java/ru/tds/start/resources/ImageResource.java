@@ -73,8 +73,12 @@ public class ImageResource {
 		
 		// генерим урл для картинки на главную страницу
 		String imageId = ImageDB.getIdOfLatestImage();
-		String htmlRespons = "<img class='img_mini' src='http://localhost:8080/photohost/imagebyid?id=" + imageId + "'>";
-		
+		String htmlRespons;
+		if (imageId != null) {
+			htmlRespons = "<img class='img_mini' src='http://localhost:8080/photohost/imagebyid?id=" + imageId + "'>";
+		} else {
+			htmlRespons = "<p>В базе данных пока нет ни одной фотографии</p>"; 
+		}
 		return Response.ok(htmlRespons).build();
 	}
 	
@@ -189,4 +193,17 @@ public class ImageResource {
 		return ImageDB.likeIncrement(id, user.get_Id());
 	}
 
+	
+	@GET
+	@Path("/nextimage")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public String getNextImage(@Auth User user, @QueryParam("id") String id) 
+			throws AuthenticationException {
+		// если не прошли через Authenticator
+		if (user.isNull()==true) 
+			return null; 
+
+		return ImageDB.getNextImageId(id);
+	}
+	
 }

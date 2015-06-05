@@ -20,6 +20,8 @@ import ru.tds.start.core.User;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
@@ -125,17 +127,17 @@ public class ImageDB {
 		// создаем правило сортировки по полю "uploadDate" (наверху самые свежие)
 		DBObject sort = new BasicDBObject("uploadDate", -1);
 		DBObject dbObject = new BasicDBObject();
-
-		// берем самую первую картинку из выборки с учетом сортировки
-		imageGFS = gridFS.find(dbObject, sort).get(0);
-		if (imageGFS != null) {
+		
+		try {		
+			// берем самую первую картинку из выборки с учетом сортировки
+			imageGFS = gridFS.find(dbObject, sort).get(0);
 			String imageId = imageGFS.getId().toString();
-			mongo.close();
 			return imageId;
-		} else { 
-			mongo.close();
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит getIdOfLatestImage() : не удалось взять imageId");
+		} catch (IndexOutOfBoundsException e) { 
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит getIdOfLatestImage() : IndexOutOfBoundsException - в базе нет фоток");
 			return null;
+		} finally {
+			mongo.close();
 		}
 	}
 
@@ -179,23 +181,19 @@ public class ImageDB {
 		DBObject sort = new BasicDBObject("uploadDate", -1);
 		DBObject query = new BasicDBObject("metadata.userId", userId);
 		
-		
-		System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит getListImageIdByUserId : берем отсортированный массив картинок");
 		// получаем выборку картинок по запросу
 		List<GridFSDBFile> listGridFS = gridFS.find(query, sort);
-		System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит getListImageIdByUserId : взяли отсортированный массив картинок");
 		if (!listGridFS.isEmpty()) {
 			// создаем массив id картинок
 			for (GridFSDBFile imageGFS : listGridFS) {
 				listImageId.add(imageGFS.getId().toString());
 			}
 			mongo.close();
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит getListImageIdByUserId : возвращаем отсортированный массив картинок в ресурс");
 			return listImageId;
 			
 		} else {
 			mongo.close();
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит getListImageId() : массив картинок нулевой.");
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит getListImageIdByUserId() : массив картинок нулевой.");
 			return null;
 		}
 	}
@@ -203,6 +201,7 @@ public class ImageDB {
 	
 	@SuppressWarnings("deprecation")
 	public static String getMetaDataByImageId (String id) {
+		System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() id = " + id);
 		if (!ObjectId.isValid(id))
 			return null;
 		ObjectId objectId = new ObjectId(id);
@@ -213,21 +212,36 @@ public class ImageDB {
 		GridFSDBFile imageGFS = null;
 		
 		imageGFS = gridFS.findOne(objectId);
+		
+		System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() нашли файл в монго imageGFS " + id);
+		
 		if (imageGFS != null) {
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() если файл в монго imageGFS != 0 " + id);
+			
 			SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
 			// взяли коллекцию метадада
 			DBObject metadataObject = imageGFS.getMetaData();
+			
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() взяли метадата " + id);
+			
 			String userId = metadataObject.get("userId").toString();
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() взяли userId " + userId);
 			String author = UserDB.getFullnameById(userId);
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() взяли author " + author);
 			String uploadDate = dateFormat.format(imageGFS.getUploadDate());
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() взяли uploadDate " + uploadDate);
 			// добавляем к коллекции метадата еще данные для страницы
 			metadataObject.put("author", author);
 			metadataObject.put("uploadDate", uploadDate);
-			mongo.close();
 			
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() тут положили все в  metadataObject  " + metadataObject);
+			//!!!!!!!!!!!!!!!!!!mongo.close();
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() тут не стал закрывать монго базу  ");
 			return metadataObject.toString();
 		} else { 
 			mongo.close();
+			
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() тут файл в монго imageGFS == 0 " + id);
 			return null;
 		}
 	}
@@ -363,4 +377,49 @@ public class ImageDB {
 		}
 	}
 
+	
+	@SuppressWarnings("deprecation")
+	public static String getNextImageId(String id) {
+		if (!ObjectId.isValid(id))
+			return null;
+
+		mongo = new MongoClient(SERVER);
+		db = mongo.getDB(DBNAME);
+		GridFS gridFS = new GridFS(db);
+		List<String> listImageId = new ArrayList<String>();
+		
+		// создаем правило сортировки по полю "uploadDate" (наверху самые свежие)
+		DBObject sort = new BasicDBObject("uploadDate", -1);
+		DBObject query = new BasicDBObject();
+
+		// получаем выборку картинок по запросу
+		List<GridFSDBFile> listGridFS = gridFS.find(query, sort);
+		if (!listGridFS.isEmpty()) {
+			// создаем массив id картинок
+			for (GridFSDBFile imageGFS : listGridFS) {
+				listImageId.add(imageGFS.getId().toString());
+			}
+			mongo.close();
+			
+			// определяем длину массива
+			int lengthOfList = listImageId.size();
+			// определяем индекс текущего айдишника в массиве
+			int indexOfImage = listImageId.indexOf(id);
+			
+			// берем следующий элемент массива, проверяем не вышли ли за дипазон
+			if (indexOfImage == (lengthOfList-1)) {
+				indexOfImage = 0;
+			} else {
+				indexOfImage++;
+			}
+			String nextImageId = listImageId.get(indexOfImage);
+			return nextImageId;
+			
+		} else {
+			mongo.close();
+			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит getNextImageId() : массив картинок нулевой.");
+			return id;
+		}
+	}
+	
 }

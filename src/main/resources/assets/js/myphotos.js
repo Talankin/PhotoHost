@@ -17,7 +17,7 @@ getImagesList();
 $('body').on('click', '.img_mini', function(){	// работает для всех (и для динамечески подгружаемых тоже)
 	src = $(this).attr('src');
 	imageId = getImgIdFromUrl(src); 
-	getMetaData(src);
+	getMetaData();
 	$('#divMetadataImg').html('<img class="img_meta" src=' + src + '>');
 	$('#formMetadataImg').show();
 	return false;
@@ -79,8 +79,8 @@ formUpload.onsubmit = function(event) {
 	      continue;
 	    }
 
-	    // нельзя грузить файлы больше 2 МБ (2*1048576)
-	    if (file.size > (2*1048576)) {
+	    // нельзя грузить файлы больше 400 кб (1 МБ 1048576)
+	    if (file.size > (400000)) {
 	      maxSizeAlarm += file.name + "\n";
 	      countUnLimitFiles ++;
 	      continue;
@@ -107,10 +107,10 @@ formUpload.onsubmit = function(event) {
 	  // обработчик, когда запрос завершен
 	  xmlHttpRequest.onload = function(response) {
 	    if (xmlHttpRequest.status == 200) {
-	      // файлы загружены на сервер
-	      buttonUpload.innerHTML="Добавить";
-	      alert("файлы загружены");
-	      document.location.href = rootClientsURL + "/myphotos.html";
+		      // файлы загружены на сервер
+		      buttonUpload.innerHTML="Добавить";
+		      //alert("файлы загружены");
+		      document.location.href = rootClientsURL + "/myphotos.html";
 	    } else if (xmlHttpRequest.status == 401) {
 			alert("Для работы с приложением PhotoHost необходимо ввести логин и пароль");
 			document.location.href = rootClientsURL + "/index.html";
