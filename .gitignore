@@ -1,2 +1,8 @@
 .settings
 target/
+*.iml
+.idea
+.project
+.settings
+.classpath
+.checkstyle
