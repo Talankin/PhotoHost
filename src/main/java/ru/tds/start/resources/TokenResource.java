@@ -1,6 +1,5 @@
 package ru.tds.start.resources;
 
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
@@ -13,65 +12,49 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 
 import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ru.tds.start.core.Token;
 import ru.tds.start.db.TokenDB;
 import ru.tds.start.db.UserDB;
 
-import com.google.common.collect.ImmutableList;
-
 @Path("/token")
 @Produces(MediaType.APPLICATION_JSON)
 public class TokenResource {
-	private ImmutableList<String> grantTypes;
-	
-	public TokenResource (
-			ImmutableList<String> grantTypes) {
-		this.grantTypes = grantTypes;
-	}
-	
-	@POST
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public Response tokenPOST (
-			//@FormParam("grant_type") String grantType,
-			@FormParam("login") String login,
-			@FormParam("password") String password,
-			@FormParam("client_id") String clientId ) {
+    final static Logger logger = LoggerFactory.getLogger(TokenResource.class);
 
-		// проверка, что grant Type разрешен
-		/*if (!grantTypes.contains(grantType)) {
-			throw new WebApplicationException(Response.status(Response.Status.METHOD_NOT_ALLOWED).build());
-		}*/
-		
-		// пытаюсь найти юзера с введенными учетными данными
-		Document document = UserDB.getUserDocByLoginPassword(login, password);
-		
-		if (document == null) {
-			throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
-		}
-		
-		// берем userId, полученный из mongodb, для создания токена
-		String userId = document.getString("_id");
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response tokenPOST(@FormParam("login") String login,
+            @FormParam("password") String password,
+            @FormParam("client_id") String clientId) {
 
-		System.err.println("***************Нашли юзера в базе " + document.toJson());
-		
-		// генерим и возвращаем токен
-		Token token = null;
-		try {
-			System.err.println("*************** пробуем создать токен ");
-			token = TokenDB.createToken(userId);
-		} catch (Exception e) {
-			System.err.println("*************** не получилось создать токен ");
-			throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
-		}
-		
-		Cookie cookie = new Cookie("tokenId",token.getTokenId().toString());
-		NewCookie newCookie = new NewCookie(cookie);
-		
-		System.err.println("******************* возвращаем куки токен на страницу ");
-		
-		//return Response.ok(tokenDoc.toJson()).type(MediaType.APPLICATION_JSON).build();
-		return Response.ok("response Ok").cookie(newCookie).build();
-	}
-	
+        // to find the user by login and password in mongodb 
+        Document document = UserDB.getUserDocByLoginPassword(login, password);
+
+        if (document == null) {
+            throw new WebApplicationException(Response.status(
+                    Response.Status.UNAUTHORIZED).build());
+        }
+
+        // to get userId from mongodb for generation token
+        String userId = document.getString("_id");
+
+        // generate and return token
+        Token token = null;
+        try {
+            token = TokenDB.createToken(userId);
+        } catch (Exception e) {
+            logger.error("===== unable to create token");
+            throw new WebApplicationException(Response.status(
+                    Response.Status.UNAUTHORIZED).build());
+        }
+
+        Cookie cookie = new Cookie("tokenId", token.getTokenId().toString());
+        NewCookie newCookie = new NewCookie(cookie);
+
+        return Response.ok().cookie(newCookie).build();
+    }
+
 }

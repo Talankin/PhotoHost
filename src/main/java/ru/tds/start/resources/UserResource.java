@@ -14,51 +14,51 @@ import ru.tds.start.db.UserDB;
 
 @Path("/photohost")
 public class UserResource {
-	@POST
-	@Path("/create")
-	@Produces(MediaType.APPLICATION_JSON) 
-	@Consumes(MediaType.APPLICATION_JSON) 
-	public boolean createUser(Document doc) {
-		UserDB.createUser(doc);
-		return true;
-	}
-	
-	@GET
-	@Path("/auth")
-	@Produces(MediaType.APPLICATION_JSON)
-	public String signInAuthenticated(@Auth User user) throws AuthenticationException {
-		// если не прошли через Authenticator
-		if (user.isNull()==true) 
-			return null; 
+    @POST
+    @Path("/create")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public boolean createUser(Document doc) {
+        UserDB.createUser(doc);
+        return true;
+    }
 
-		return user.toJson();
-	}
+    @GET
+    @Path("/auth")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String signInAuthenticated(@Auth User user)
+            throws AuthenticationException {
+        if (user.isNull() == true)
+            return null;
 
-	@POST
-	@Path("/update")
-	@Produces(MediaType.APPLICATION_JSON) 
-	@Consumes(MediaType.APPLICATION_JSON) 
-	public boolean updateUser(@Auth User user, Document doc) throws AuthenticationException {
-		// если не прошли через Authenticator
-		if (user.isNull()==true) 
-			return false; 
-		
-		UserDB.updateUser(doc);
-		return true;
-	}
+        return user.toJson();
+    }
 
-	@POST
-	@Path("/delete")
-	@Consumes(MediaType.APPLICATION_JSON) 
-	public boolean deleteUser(@Auth User user, Document doc) throws AuthenticationException {
-		// если не прошли через Authenticator
-		if (user.isNull()==true) 
-			return false; 
-		
-		// удаляем все фото пользователя
-		ImageDB.deletePhotosByUserId(user.get_Id());
-		// удаляем самого пользователя
-		UserDB.deleteUser(doc);
-		return true;
-	}
+    @POST
+    @Path("/update")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public boolean updateUser(@Auth User user, Document doc)
+            throws AuthenticationException {
+        if (user.isNull() == true)
+            return false;
+
+        UserDB.updateUser(doc);
+        return true;
+    }
+
+    @POST
+    @Path("/delete")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public boolean deleteUser(@Auth User user, Document doc)
+            throws AuthenticationException {
+        if (user.isNull() == true)
+            return false;
+
+        // to delete all images by user
+        ImageDB.deletePhotosByUserId(user.get_Id());
+        // to delete this user
+        UserDB.deleteUser(doc);
+        return true;
+    }
 }

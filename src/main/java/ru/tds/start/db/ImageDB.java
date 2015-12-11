@@ -15,13 +15,13 @@ import java.util.List;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ru.tds.start.core.User;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
@@ -32,394 +32,330 @@ import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSInputFile;
 
 public class ImageDB {
-	private final static String SERVER = "localhost";
-	private final static String DBNAME = "photodb";
-	private static MongoClient mongo;
-	private static DB db;
-	private static MongoDatabase mDb;
-	
-	@SuppressWarnings("deprecation")
-	public static void loadImageToDB(InputStream inputStream, String fileName, User user) {
-		mongo = new MongoClient(SERVER);
-		db = mongo.getDB(DBNAME);
+    final static Logger logger = LoggerFactory.getLogger(ImageDB.class);
+    private final static String SERVER = "localhost";
+    private final static String DBNAME = "photodb";
+    //private final static String SERVER = config.getDBServer();
+    //private final static String DBNAME = PhotoHostConfiguration.getDBName();;
+    private static MongoClient mongo = new MongoClient(SERVER);
+    private static DB db;
+    private static MongoDatabase mDb;
+/*
+    public ImageDB (String server, String dbName) {
+        this.server = server;
+        this.dbName = dbName;
+        logger.info("============================" + server + "  " + dbName);
+    }
+*/
+    @SuppressWarnings("deprecation")
+    public static void loadImageToDB(InputStream inputStream, String fileName,
+            User user) {
+        db = mongo.getDB(DBNAME);
+        GridFS gridFS = new GridFS(db);
 
-		// создаем объект GridFS
-		GridFS gridFS = new GridFS(db); 
-		
-		// сохраняем фото в mongodb
-		GridFSInputFile gridFSInputFile;
-		try {
-			// создаем поля метаданных
-			int likes = 0;
-			DBObject metadata = new BasicDBObject("userId",user.get_Id());
-			metadata.put("imageName","");
-			metadata.put("description","");
-			metadata.put("likes", likes);
-			List<BasicDBObject> likesListUserId = new ArrayList<>();
-			metadata.put("likesListUserId", likesListUserId);
-			
-			gridFSInputFile = gridFS.createFile(inputStream);
-			gridFSInputFile.setFilename(fileName);
-			gridFSInputFile.setMetaData(metadata);
-			gridFSInputFile.save();
-		} catch (Exception e) {
-			System.err.println("=============================== Exception. Не удалось сохранить файл в mongodb\n" + e.getMessage());
-		} finally {
-			mongo.close();
-		}
-	}
+        // save image in mongodb
+        GridFSInputFile gridFSInputFile;
+        try {
+            // create fields of metadata in mongodb
+            int likes = 0;
+            DBObject metadata = new BasicDBObject("userId", user.get_Id());
+            metadata.put("imageName", "");
+            metadata.put("description", "");
+            metadata.put("likes", likes);
+            List<BasicDBObject> likesListUserId = new ArrayList<>();
+            metadata.put("likesListUserId", likesListUserId);
 
-	@SuppressWarnings("deprecation")
-	public static void loadImageToDBFromHDD(String fileWithPath) {
-		mongo = new MongoClient(SERVER);
-		db = mongo.getDB(DBNAME);
+            gridFSInputFile = gridFS.createFile(inputStream);
+            gridFSInputFile.setFilename(fileName);
+            gridFSInputFile.setMetaData(metadata);
+            gridFSInputFile.save();
+        } catch (Exception e) {
+            logger.error("===== Exception. Unable to save file in mongodb\n"
+                    + e.getMessage());
+        }
+    }
 
-		File image = new File(fileWithPath);
-		GridFS gridFS = new GridFS(db); 
-		
-		// сохраняем фото в mongodb
-		GridFSInputFile gridFSInputFile;
-		try {
-			gridFSInputFile = gridFS.createFile(image);
-			gridFSInputFile.setFilename("siski");
-			gridFSInputFile.save();
-		} catch (FileNotFoundException e) {
-			System.err.println("=============================== FileNotFoundException");
-		} catch (IOException e) {
-			System.err.println("=============================== IOException. Не удалось сохранить файл в mongodb\n");
-		} catch (Exception e) {
-			System.err.println("=============================== Exception. Не удалось сохранить файл в mongodb\n" + e.getMessage());
-		} finally {
-			mongo.close();
-		}
-	}
-	
-	/*@SuppressWarnings("deprecation")
-	public static InputStream getLatestImage() {
-		mongo = new MongoClient(SERVER);
-		db = mongo.getDB(DBNAME);
-		GridFS gridFS = new GridFS(db);
-		GridFSDBFile imageGFS = null;
-		
-		// создаем правило сортировки по полю "uploadDate" (наверху самые свежие)
-		DBObject sort = new BasicDBObject("uploadDate", -1);
-		DBObject dbObject = new BasicDBObject();
+    @SuppressWarnings("deprecation")
+    public static void loadImageToDBFromHDD(String fileWithPath) {
+        db = mongo.getDB(DBNAME);
 
-		// берем самую первую картинку из выборки с учетом сортировки
-		imageGFS = gridFS.find(dbObject, sort).get(0);
-		if (imageGFS != null) {
-			// читаем поток байтов из картинки
-			// при этом используем буфферизированный поток BufferedInputStream - так быстрее,
-			InputStream inputStream = new BufferedInputStream(imageGFS.getInputStream());
-			return inputStream;
-		} else 
-			return null;
-	}*/
-	
+        File image = new File(fileWithPath);
+        GridFS gridFS = new GridFS(db);
 
-	@SuppressWarnings("deprecation")
-	public static String getIdOfLatestImage() {
-		mongo = new MongoClient(SERVER);
-		db = mongo.getDB(DBNAME);
-		GridFS gridFS = new GridFS(db);
-		GridFSDBFile imageGFS = null;
-		
-		// создаем правило сортировки по полю "uploadDate" (наверху самые свежие)
-		DBObject sort = new BasicDBObject("uploadDate", -1);
-		DBObject dbObject = new BasicDBObject();
-		
-		try {		
-			// берем самую первую картинку из выборки с учетом сортировки
-			imageGFS = gridFS.find(dbObject, sort).get(0);
-			String imageId = imageGFS.getId().toString();
-			return imageId;
-		} catch (IndexOutOfBoundsException e) { 
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит getIdOfLatestImage() : IndexOutOfBoundsException - в базе нет фоток");
-			return null;
-		} finally {
-			mongo.close();
-		}
-	}
+        GridFSInputFile gridFSInputFile;
+        try {
+            gridFSInputFile = gridFS.createFile(image);
+            gridFSInputFile.setFilename("siski");
+            gridFSInputFile.save();
+        } catch (FileNotFoundException e) {
+            logger.error("===== FileNotFoundException");
+        } catch (IOException e) {
+            logger.error("===== IOException. Unable to save file in mongodb\n");
+        } catch (Exception e) {
+            logger.error("===== IOException. Unable to save file in mongodb\n"
+                    + e.getMessage());
+        }
+    }
 
-	
-	@SuppressWarnings("deprecation")
-	public static InputStream getImageById (String id) {
-		// проверяем HEX валидность id
-		if (!ObjectId.isValid(id))
-			return null;
-		// получаем из id - ObjectId
-		ObjectId objectId = new ObjectId(id);
-		
-		mongo = new MongoClient(SERVER);
-		db = mongo.getDB(DBNAME);
-		GridFS gridFS = new GridFS(db);
-		GridFSDBFile imageGFS = null;
-		
-		// ищем картинку в mongodb по ее objectId 
-		imageGFS = gridFS.findOne(objectId);
-		
-		if (imageGFS != null) {
-			//mongo.close();
-			/* читаем поток байтов из картинки
-			 * при этом используем буфферизированный поток BufferedInputStream - так быстрее,
-			 */
-			InputStream inputStream = new BufferedInputStream(imageGFS.getInputStream());
-			
-			return inputStream;
-		} else 
-			return null;
-	}
+    @SuppressWarnings("deprecation")
+    public static String getIdOfLatestImage() {
+        db = mongo.getDB(DBNAME);
+        GridFS gridFS = new GridFS(db);
+        GridFSDBFile imageGFS = null;
 
-	@SuppressWarnings("deprecation")
-	public static List<String> getListImageIdByUserId(String userId) {
-		mongo = new MongoClient(SERVER);
-		db = mongo.getDB(DBNAME);
-		GridFS gridFS = new GridFS(db);
-		List<String> listImageId = new ArrayList<String>();
-		
-		// создаем правило сортировки по полю "uploadDate" (наверху самые свежие)
-		DBObject sort = new BasicDBObject("uploadDate", -1);
-		DBObject query = new BasicDBObject("metadata.userId", userId);
-		
-		// получаем выборку картинок по запросу
-		List<GridFSDBFile> listGridFS = gridFS.find(query, sort);
-		if (!listGridFS.isEmpty()) {
-			// создаем массив id картинок
-			for (GridFSDBFile imageGFS : listGridFS) {
-				listImageId.add(imageGFS.getId().toString());
-			}
-			mongo.close();
-			return listImageId;
-			
-		} else {
-			mongo.close();
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит getListImageIdByUserId() : массив картинок нулевой.");
-			return null;
-		}
-	}
+        // to create rule of sort by field "uploadDate" (in up is latest)
+        DBObject sort = new BasicDBObject("uploadDate", -1);
+        DBObject dbObject = new BasicDBObject();
 
-	
-	@SuppressWarnings("deprecation")
-	public static String getMetaDataByImageId (String id) {
-		System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() id = " + id);
-		if (!ObjectId.isValid(id))
-			return null;
-		ObjectId objectId = new ObjectId(id);
-		
-		mongo = new MongoClient(SERVER);
-		db = mongo.getDB(DBNAME);
-		GridFS gridFS = new GridFS(db);
-		GridFSDBFile imageGFS = null;
-		
-		imageGFS = gridFS.findOne(objectId);
-		
-		System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() нашли файл в монго imageGFS " + id);
-		
-		if (imageGFS != null) {
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() если файл в монго imageGFS != 0 " + id);
-			
-			SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
-			// взяли коллекцию метадада
-			DBObject metadataObject = imageGFS.getMetaData();
-			
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() взяли метадата " + id);
-			
-			String userId = metadataObject.get("userId").toString();
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() взяли userId " + userId);
-			String author = UserDB.getFullnameById(userId);
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() взяли author " + author);
-			String uploadDate = dateFormat.format(imageGFS.getUploadDate());
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() взяли uploadDate " + uploadDate);
-			// добавляем к коллекции метадата еще данные для страницы
-			metadataObject.put("author", author);
-			metadataObject.put("uploadDate", uploadDate);
-			
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() тут положили все в  metadataObject  " + metadataObject);
-			//!!!!!!!!!!!!!!!!!!mongo.close();
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() тут не стал закрывать монго базу  ");
-			return metadataObject.toString();
-		} else { 
-			mongo.close();
-			
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  getMetaDataByImageId() тут файл в монго imageGFS == 0 " + id);
-			return null;
-		}
-	}
+        try {
+            // getting the first image from sort array  
+            imageGFS = gridFS.find(dbObject, sort).get(0);
+            String imageId = imageGFS.getId().toString();
 
-	@SuppressWarnings("deprecation")
-	public static boolean updateMetadata(Document doc, String id) {
-		if (!ObjectId.isValid(id))
-			return false;
-		ObjectId objectId = new ObjectId(id);
+            return imageId;
+        } catch (IndexOutOfBoundsException e) {
+            logger.error("===== IndexOutOfBoundsException : No pictures in the database");
+            return null;
+        }
+    }
 
-		mongo = new MongoClient(SERVER);
-		db = mongo.getDB(DBNAME);
-		GridFS gridFS = new GridFS(db);
-		GridFSDBFile imageGFS = null;
+    @SuppressWarnings("deprecation")
+    public static InputStream getImageById(String id) {
+        // to check HEX validation of id
+        if (!ObjectId.isValid(id))
+            return null;
+        // getting ObjectId from id  
+        ObjectId objectId = new ObjectId(id);
 
-		// нашли документ mongo для апдейта
-		imageGFS = gridFS.findOne(objectId);
+        db = mongo.getDB(DBNAME);
+        GridFS gridFS = new GridFS(db);
+        GridFSDBFile imageGFS = null;
 
-		// получаем список полей для апдейта
-		JSONObject jsonObject = new JSONObject(doc.toJson()); 
-		Iterator<String> listKeys = jsonObject.keys();
-		
-		if (imageGFS != null) {
-			DBObject metadata = imageGFS.getMetaData();
+        // search image in mongodb by objectId
+        imageGFS = gridFS.findOne(objectId);
 
-			// из метаданных удаляем поля, которые будем апдейтить
-			while (listKeys.hasNext()) {
-				String key = listKeys.next();
-				metadata.removeField(key);
-			}
-			metadata.putAll(doc);
-			imageGFS.setMetaData(metadata);
-			imageGFS.save();
-			mongo.close();
-			
-			return true;
-		} else { 
-			mongo.close();
-			return false;
-		}
-	}
-	
-	
-	@SuppressWarnings("deprecation")
-	public static boolean deletePhotoByImageId(String id) {
-		if (!ObjectId.isValid(id))
-			return false;
-		ObjectId objectId = new ObjectId(id);
+        if (imageGFS != null) {
+            /* reading stream of bytes from image
+             * using buffered stream - is faster
+             */
+            InputStream inputStream = new BufferedInputStream(
+                    imageGFS.getInputStream());
 
-		mongo = new MongoClient(SERVER);
-		db = mongo.getDB(DBNAME);
-		GridFS gridFS = new GridFS(db);
+            return inputStream;
+        } else
+            return null;
+    }
 
-		try {
-			gridFS.remove(objectId);
-		} catch (MongoException e) {
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ ошибка удаления фото из gridfs " + e.getMessage());
-			return false;
-		} finally {
-			mongo.close();
-		}
-		return true;
-	}
+    @SuppressWarnings("deprecation")
+    public static List<String> getListImageIdByUserId(String userId) {
+        db = mongo.getDB(DBNAME);
+        GridFS gridFS = new GridFS(db);
+        List<String> listImageId = new ArrayList<String>();
 
-	
-	@SuppressWarnings("deprecation")
-	public static boolean deletePhotosByUserId(String userId) {
-		mongo = new MongoClient(SERVER);
-		db = mongo.getDB(DBNAME);
-		GridFS gridFS = new GridFS(db);
-		DBObject query = new BasicDBObject("metadata.userId", userId);
-		
-		// получаем выборку картинок по запросу
-		List<GridFSDBFile> listGridFS = gridFS.find(query);
-		
-		if (listGridFS.isEmpty()) {
-			System.err.println("ээээээээээээээээээээээээээээээээээээээ  говорит deletePhotosByUserId() : массив картинок нулевой.");
-			return false;
-		}
+        DBObject sort = new BasicDBObject("uploadDate", -1);
+        DBObject query = new BasicDBObject("metadata.userId", userId);
 
-		try {
-			// удаляем каждую фотку в массиве
-			for (GridFSDBFile imageGFS : listGridFS) {
-				gridFS.remove(imageGFS);
-			}
-			return true;
-		} catch (MongoException e) {
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ ошибка удаления фото из gridfs " + e.getMessage());
-			return false;
-		} finally {
-			mongo.close();
-		}
-	}
+        List<GridFSDBFile> listGridFS = gridFS.find(query, sort);
+        if (!listGridFS.isEmpty()) {
+            // to create array of image id 
+            for (GridFSDBFile imageGFS : listGridFS) {
+                listImageId.add(imageGFS.getId().toString());
+            }
+            return listImageId;
 
-	public static int likeIncrement(String id, String userId) {
-		if (!ObjectId.isValid(id))
-			return -1;
-		ObjectId objectId = new ObjectId(id);
-		
-		mongo = new MongoClient(SERVER);
-		mDb = mongo.getDatabase(DBNAME);
-		MongoCollection<Document> collection = mDb.getCollection("fs.files");
+        } else {
+            logger.info("===== No pictures in the array");
+            return null;
+        }
+    }
 
-		int likes = -1;
-		try {
-			// ищем лайкнувшего юзера
-			Document query = new Document("_id", objectId);
-			query.put("metadata.likesListUserId", userId);
-			Document document = collection.find(query).first();
+    @SuppressWarnings("deprecation")
+    public static String getMetaDataByImageId(String id) {
+        if (!ObjectId.isValid(id))
+            return null;
+        ObjectId objectId = new ObjectId(id);
 
-			// если юзер уже ставил лайк, то на выход
-			if (document != null) {
-				return -1;
-			}
-			
-			document = collection.find(eq("_id", objectId)).first();
-			// двойной апдейт: добавляем лайкнувшего юзера и лайк++
-			Document updateQuery = new Document("$push", new BasicDBObject("metadata.likesListUserId",userId));
-			updateQuery.put("$inc", new BasicDBObject("metadata.likes",1));
-			collection.updateOne(document, updateQuery); 
-			
-			// возвращаем количество лайков из БД
-			document = collection.find(eq("_id", objectId)).first();
-			Document metadata = (Document)document.get("metadata");
-			likes = metadata.getInteger("likes");
+        db = mongo.getDB(DBNAME);
+        GridFS gridFS = new GridFS(db);
+        GridFSDBFile imageGFS = null;
 
-			return likes;
-		} catch (Exception e) {
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ говорит likeIncrement() - не удалось обновить лайк\n" + e.getMessage());
-			return -1;
-		} finally {
-			mongo.close();
-		}
-	}
+        imageGFS = gridFS.findOne(objectId);
+        if (imageGFS != null) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+            // to get metadata document 
+            DBObject metadataObject = imageGFS.getMetaData();
+            String userId = metadataObject.get("userId").toString();
+            String author = UserDB.getFullnameById(userId);
+            String uploadDate = dateFormat.format(imageGFS.getUploadDate());
+            // добавляем к коллекции метадата еще данные для страницы
+            metadataObject.put("author", author);
+            metadataObject.put("uploadDate", uploadDate);
 
-	
-	@SuppressWarnings("deprecation")
-	public static String getNextImageId(String id) {
-		if (!ObjectId.isValid(id))
-			return null;
+            return metadataObject.toString();
+        } else {
+            logger.info("===== imageGFS for imageId = {} in mongodb is null",
+                    id);
+            return null;
+        }
+    }
 
-		mongo = new MongoClient(SERVER);
-		db = mongo.getDB(DBNAME);
-		GridFS gridFS = new GridFS(db);
-		List<String> listImageId = new ArrayList<String>();
-		
-		// создаем правило сортировки по полю "uploadDate" (наверху самые свежие)
-		DBObject sort = new BasicDBObject("uploadDate", -1);
-		DBObject query = new BasicDBObject();
+    @SuppressWarnings("deprecation")
+    public static boolean updateMetadata(Document doc, String id) {
+        if (!ObjectId.isValid(id))
+            return false;
+        ObjectId objectId = new ObjectId(id);
 
-		// получаем выборку картинок по запросу
-		List<GridFSDBFile> listGridFS = gridFS.find(query, sort);
-		if (!listGridFS.isEmpty()) {
-			// создаем массив id картинок
-			for (GridFSDBFile imageGFS : listGridFS) {
-				listImageId.add(imageGFS.getId().toString());
-			}
-			mongo.close();
-			
-			// определяем длину массива
-			int lengthOfList = listImageId.size();
-			// определяем индекс текущего айдишника в массиве
-			int indexOfImage = listImageId.indexOf(id);
-			
-			// берем следующий элемент массива, проверяем не вышли ли за дипазон
-			if (indexOfImage == (lengthOfList-1)) {
-				indexOfImage = 0;
-			} else {
-				indexOfImage++;
-			}
-			String nextImageId = listImageId.get(indexOfImage);
-			return nextImageId;
-			
-		} else {
-			mongo.close();
-			System.err.println("ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ  говорит getNextImageId() : массив картинок нулевой.");
-			return id;
-		}
-	}
-	
+        db = mongo.getDB(DBNAME);
+        GridFS gridFS = new GridFS(db);
+        GridFSDBFile imageGFS = null;
+
+        // to find the document in mongodb for updating 
+        imageGFS = gridFS.findOne(objectId);
+
+        // to get list of fields for updating  
+        JSONObject jsonObject = new JSONObject(doc.toJson());
+        Iterator<String> listKeys = jsonObject.keys();
+
+        if (imageGFS != null) {
+            DBObject metadata = imageGFS.getMetaData();
+
+            // to delete the fields, which will to update 
+            while (listKeys.hasNext()) {
+                String key = listKeys.next();
+                metadata.removeField(key);
+            }
+            // to add the fields for updating
+            metadata.putAll(doc);
+            imageGFS.setMetaData(metadata);
+            imageGFS.save();
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    public static boolean deletePhotoByImageId(String id) {
+        if (!ObjectId.isValid(id))
+            return false;
+        ObjectId objectId = new ObjectId(id);
+
+        db = mongo.getDB(DBNAME);
+        GridFS gridFS = new GridFS(db);
+
+        try {
+            gridFS.remove(objectId);
+        } catch (MongoException e) {
+            logger.error("===== Image can not be removed from the database gridfs "
+                    + e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    
+    @SuppressWarnings("deprecation")
+    public static boolean deletePhotosByUserId(String userId) {
+        db = mongo.getDB(DBNAME);
+        GridFS gridFS = new GridFS(db);
+        DBObject query = new BasicDBObject("metadata.userId", userId);
+
+        List<GridFSDBFile> listGridFS = gridFS.find(query);
+
+        if (listGridFS.isEmpty()) {
+            logger.info("===== No pictures in the array for removing");
+            return false;
+        }
+
+        try {
+            // to delete each image in array  
+            for (GridFSDBFile imageGFS : listGridFS) {
+                gridFS.remove(imageGFS);
+            }
+            return true;
+        } catch (MongoException e) {
+            logger.error("===== error removing images from mongodb gridfs "
+                    + e.getMessage());
+            return false;
+        }
+    }
+
+    public static int likeIncrement(String id, String userId) {
+        if (!ObjectId.isValid(id))
+            return -1;
+        ObjectId objectId = new ObjectId(id);
+
+        mDb = mongo.getDatabase(DBNAME);
+        MongoCollection<Document> collection = mDb.getCollection("fs.files");
+
+        int likes = -1;
+        try {
+            // to find user, who set the like
+            Document query = new Document("_id", objectId);
+            query.put("metadata.likesListUserId", userId);
+            Document document = collection.find(query).first();
+
+            // if user already put the like, then to exit 
+            if (document != null) {
+                return -1;
+            }
+
+            document = collection.find(eq("_id", objectId)).first();
+            // double update: to put the liked user and increment of like
+            Document updateQuery = new Document("$push", new BasicDBObject(
+                    "metadata.likesListUserId", userId));
+            updateQuery.put("$inc", new BasicDBObject("metadata.likes", 1));
+            collection.updateOne(document, updateQuery);
+
+            // to return the count of likes from mongodb 
+            document = collection.find(eq("_id", objectId)).first();
+            Document metadata = (Document) document.get("metadata");
+            likes = metadata.getInteger("likes");
+
+            return likes;
+        } catch (Exception e) {
+            logger.error("===== Failed to update the like\n" + e.getMessage());
+            return -1;
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    public static String getNextImageId(String id) {
+        if (!ObjectId.isValid(id))
+            return null;
+
+        db = mongo.getDB(DBNAME);
+        GridFS gridFS = new GridFS(db);
+        List<String> listImageId = new ArrayList<String>();
+
+        DBObject sort = new BasicDBObject("uploadDate", -1);
+        DBObject query = new BasicDBObject();
+
+        List<GridFSDBFile> listGridFS = gridFS.find(query, sort);
+        if (!listGridFS.isEmpty()) {
+            for (GridFSDBFile imageGFS : listGridFS) {
+                listImageId.add(imageGFS.getId().toString());
+            }
+
+            // to calculate length of array of image 
+            int lengthOfList = listImageId.size();
+            // to get the index current of imageId in array 
+            int indexOfImage = listImageId.indexOf(id);
+
+            // to get the next element of array and to check out of range
+            if (indexOfImage == (lengthOfList - 1)) {
+                indexOfImage = 0;
+            } else {
+                indexOfImage++;
+            }
+            String nextImageId = listImageId.get(indexOfImage);
+            return nextImageId;
+
+        } else {
+            logger.info("===== No pictures in the array");
+            return id;
+        }
+    }
+
 }
