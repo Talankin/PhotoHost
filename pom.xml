@@ -8,11 +8,14 @@
     <prerequisites>
         <maven>3.0.0</maven>
     </prerequisites>
+    <modules>
+        <module>tests</module>
+    </modules>
 
     <groupId>ru.tds</groupId>
     <artifactId>PhotoHost</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <name>PhotoHost</name>
 
