@@ -7,8 +7,8 @@
 package ru.tds.steps;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
+//import org.apache.commons.configuration.ConfigurationException;
+//import org.apache.commons.configuration.PropertiesConfiguration;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -21,26 +21,26 @@ public class RestSteps {
     private static final String CONFIG_FILE = "configuration.properties";
     private static String baseUrl;
     private static Integer port;
-    private static String user;
-    private static String password;
+    private static String userInJson = "{\"login\":\"dima\",\"password\":\"2\"}";
+
 
     private static final String TOKEN_URL = "/token";
-    private static final String TOKEN_NAME = "piq-token";
+    private static final String TOKEN_NAME = "tokenId";
 
     private String token = "";
 
     private Response response;
 
-    public RestSteps() throws ConfigurationException{
+//    public RestSteps() throws ConfigurationException{
 //        PropertiesConfiguration config = new PropertiesConfiguration(CONFIG_FILE);
 //
 //        baseUrl = config.getString("base.url");
 //        port = config.getInt("base.port");
 //        user = config.getString("ldap.user");
 //        password = config.getString("ldap.password");
-        user = "dima";
-        password = "2";
-    }
+//        user = "dima";
+//        password = "2";
+//    }
 
 
     /**
@@ -48,8 +48,7 @@ public class RestSteps {
      */
     @When("^send POST request for getting token$")
     public void getTokenResponse() {
-        RestAssured.authentication = basic(user, password);
-        response = post(TOKEN_URL);
+        response = RestAssured.given().body(userInJson).contentType("application/json").when().post(TOKEN_URL);
     }
 
     /**
@@ -67,8 +66,7 @@ public class RestSteps {
      */
     @Then("^response has valid token$")
     public void getTokenFromResponse() {
-        token = "";
-        token = from(response.asString()).get(TOKEN_NAME);
+        token = response.getCookie(TOKEN_NAME);
         assertTrue("There are no token in response", !token.equals(""));
     }
 

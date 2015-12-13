@@ -32,10 +32,12 @@ $('#btnCancelUserCreate').click(function() {
 
 //---------------  functions, called by clicks and not only  ------------------------------
 function signInGetToken() {
-    $('#formSignIn').ajaxSubmit({
+    $.ajax({
         type: 'POST',
         url: rootTokenURL,
-        dataType: "text",
+        contentType: 'application/json',
+        dataType: "json",
+        data: JSON.stringify({"login": $('#login').val(),"password": $('#password').val()}),
         success: function(response){
         signInWithToken(rootClientsURL + "/photohost.html");
     },

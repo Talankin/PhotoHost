@@ -12,7 +12,7 @@ import cucumber.api.junit.Cucumber;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        features = {"src/main/java/ru.tds.features"},
+        features = {"tests/src/main/java/ru.tds.features"},
         glue = {"ru.tds.steps"},
         plugin = {"pretty",
                 "json:target/cucumber.json",

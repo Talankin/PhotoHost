@@ -25,13 +25,10 @@ public class TokenResource {
     final static Logger logger = LoggerFactory.getLogger(TokenResource.class);
 
     @POST
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response tokenPOST(@FormParam("login") String login,
-            @FormParam("password") String password,
-            @FormParam("client_id") String clientId) {
-
-        // to find the user by login and password in mongodb 
-        Document document = UserDB.getUserDocByLoginPassword(login, password);
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response tokenPOST(Document doc) {
+        // to find the user by login and password in mongodb
+        Document document = UserDB.getUserDocByLoginPassword(doc);
 
         if (document == null) {
             throw new WebApplicationException(Response.status(

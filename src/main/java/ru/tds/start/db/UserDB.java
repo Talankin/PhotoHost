@@ -1,6 +1,7 @@
 package ru.tds.start.db;
 
 import org.bson.Document;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,8 +18,10 @@ public class UserDB {
     private static MongoClient mongo = new MongoClient("localhost");
     private static MongoDatabase db;
 
-    public static Document getUserDocByLoginPassword(String login,
-            String password) {
+    public static Document getUserDocByLoginPassword(Document doc) {
+        JSONObject jsonObject = new JSONObject(doc.toJson());
+        String login = jsonObject.getString("login");
+        String password = jsonObject.getString("password");
         db = mongo.getDatabase("photodb");
         MongoCollection<Document> collection = db.getCollection("users");
         Document document = collection.find(eq("login", login)).first();
